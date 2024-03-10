@@ -1,10 +1,13 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Create a PostgreSQL query statement with given selection, from, where, and group statements,
@@ -36,4 +39,20 @@ func CreateQuery(selection string, from string, where string, group string, dire
 	}
 
 	return builder.String(), nil
+}
+
+// Execute a PostgreSQL query within the given database connection and with the given
+// query statement.
+//
+// Return: pgx.Rows-type response and nil with success, nil and error without.
+func ExecuteQuery(connection *pgx.Conn, statement string) (pgx.Rows, error) {
+	response, err := connection.Query(context.Background(), statement)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute query within given connection: %v\n", err)
+
+		return nil, err
+	}
+
+	return response, nil
 }
