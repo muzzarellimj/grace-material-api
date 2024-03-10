@@ -45,7 +45,7 @@ func CreateQuery(selection string, from string, where string, group string, dire
 // query statement.
 //
 // Return: pgx.Rows-type response and nil with success, nil and error without.
-func ExecuteQuery(connection *pgx.Conn, statement string) (pgx.Rows, error) {
+func ExecuteQuery(connection PgxConnection, statement string) (pgx.Rows, error) {
 	response, err := connection.Query(context.Background(), statement)
 
 	if err != nil {

@@ -6,43 +6,41 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var MovieConnection *pgx.Conn
+// A wrapper interface to mask pgxpool.Pool and control local access properties.
+type PgxConnection interface {
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	Close()
+}
+
+var MovieConnection PgxConnection
 
 // Connect to the Grace database pool and persist the connections as exported variables.
 func Connect(username string, password string, host string, port string) {
-	fmt.Println("Connecting to Grace database pool.")
+	fmt.Println("Connecting to Grace database pools.")
 
 	MovieConnection = connect(username, password, host, port, os.Getenv("MOVIE_DATABASE_NAME"))
 }
 
-// Connect to a named individual database.
+// Connect to a named database pool.
 //
-// Return: database connection.
-func connect(username string, password string, host string, port string, database string) *pgx.Conn {
+// Return: database pool in PgxConnection wrapper.
+func connect(username string, password string, host string, port string, database string) *pgxpool.Pool {
 	url := fmt.Sprint("postgres://", username, ":", password, "@", host, ":", port, "/", database)
 
-	connection, err := pgx.Connect(context.Background(), url)
+	connection, err := pgxpool.New(context.Background(), url)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database %s: %v\n", database, err)
+		fmt.Fprintf(os.Stderr, "Unable to connect to database pool %s: %v\n", database, err)
 		os.Exit(1)
 	}
 
 	return connection
 }
 
-// Disconnect from the Grace database pool.
+// Disconnect from the Grace database pools.
 func Disconnect() {
-	disconnect(MovieConnection)
-}
-
-// Disconnect from a provided database connection.
-func disconnect(connection *pgx.Conn) {
-	err := connection.Close(context.Background())
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to close connection to a database: %v\n", err)
-	}
+	MovieConnection.Close()
 }
