@@ -1,18 +1,20 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
-	"github.com/muzzarellimj/grace-material-api/example"
+	"github.com/joho/godotenv"
+	"github.com/muzzarellimj/grace-material-api/database"
 )
 
 func main() {
-	router := gin.Default()
+	godotenv.Load()
 
-	// EXAMPLE
-	router.GET("/api/ex/games", example.FetchGames)
-	router.GET("/api/ex/games/:id", example.FetchGame)
-	router.GET("/api/ex/movies", example.FetchMovies)
-	router.GET("/api/ex/movies/:id", example.FetchMovie)
+	database.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
+	defer database.Disconnect()
+
+	router := gin.Default()
 
 	router.Run("localhost:8080")
 }
