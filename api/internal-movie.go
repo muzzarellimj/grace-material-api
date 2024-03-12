@@ -22,6 +22,30 @@ func HandleGetMovie(context *gin.Context) {
 		return
 	}
 
+	movie, message, err := fetchMovie(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": message,
+		})
+
+		return
+	}
+
+	if movie != (model.Movie{}) {
+		context.IndentedJSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
+			"data":   movie,
+		})
+
+		return
+	}
+
+	context.Status(http.StatusNoContent)
+}
+
+func fetchMovie(id int) (model.Movie, string, error) {
 	statement, err := database.CreateQuery(
 		"m.id, m.title, m.description, m.tagline, ARRAY_AGG(DISTINCT g.name) as genres, ARRAY_AGG(DISTINCT p.name) as production_companies, m.release_date, m.runtime, m.image, m.reference_imdb, m.reference_tmdb",
 		"movies m",
@@ -34,44 +58,36 @@ func HandleGetMovie(context *gin.Context) {
 	)
 
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Unable to create PostgreSQL query statement.",
-		})
+		message := "Unable to create database query statement."
 
-		return
+		return model.Movie{}, message, err
 	}
 
 	rows, err := database.ExecuteQuery(database.MovieConnection, statement)
 
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Unable to execute PostgreSQL query.",
-		})
+		message := "Unable to execute database query."
 
-		return
+		return model.Movie{}, message, err
 	}
 
 	response, err := database.MapResponse[model.Movie](rows)
 
-	if err != nil || len(response) > 1 {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Unable to map response to a supported data structure.",
-		})
+	if err != nil {
+		message := "Unable to map database response to supported data structure."
 
-		return
+		return model.Movie{}, message, err
 	}
 
-	if len(response) > 0 {
-		context.IndentedJSON(http.StatusOK, gin.H{
-			"status": http.StatusOK,
-			"data":   response[0],
-		})
-
-		return
+	if len(response) == 0 {
+		return model.Movie{}, "", nil
 	}
 
-	context.Status(http.StatusNoContent)
+	return response[0], "", nil
 }
+
+// getOneMovie
+// getManyMovies
+
+// getMovie
+// getMovies
