@@ -22,7 +22,7 @@ func HandleGetMovie(context *gin.Context) {
 		return
 	}
 
-	movie, message, err := fetchMovie(id)
+	movie, message, err := fetchMovie("id", id)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -45,11 +45,11 @@ func HandleGetMovie(context *gin.Context) {
 	context.Status(http.StatusNoContent)
 }
 
-func fetchMovie(id int) (model.Movie, string, error) {
+func fetchMovie(field string, id int) (model.Movie, string, error) {
 	statement, err := database.CreateQuery(
 		"m.id, m.title, m.description, m.tagline, ARRAY_AGG(DISTINCT g.name) as genres, ARRAY_AGG(DISTINCT p.name) as production_companies, m.release_date, m.runtime, m.image, m.reference_imdb, m.reference_tmdb",
 		"movies m",
-		fmt.Sprint("m.id=", id),
+		fmt.Sprintf("m.%s=%v", field, id),
 		"m.id",
 		"JOIN movies_genres mg ON m.id = mg.movie",
 		"JOIN genres g ON g.id = mg.genre",
@@ -85,9 +85,3 @@ func fetchMovie(id int) (model.Movie, string, error) {
 
 	return response[0], "", nil
 }
-
-// getOneMovie
-// getManyMovies
-
-// getMovie
-// getMovies
