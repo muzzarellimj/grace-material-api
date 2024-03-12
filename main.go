@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/muzzarellimj/grace-material-api/api"
 	"github.com/muzzarellimj/grace-material-api/database"
 )
 
@@ -15,6 +16,8 @@ func main() {
 	defer database.Disconnect()
 
 	router := gin.Default()
+
+	router.GET("/api/movie", api.HandleGetMovie)
 
 	router.Run("localhost:8080")
 }
