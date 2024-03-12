@@ -15,3 +15,16 @@ type Movie struct {
 	ReferenceImdb       string    `json:"reference_imdb"`
 	ReferenceTmdb       string    `json:"reference_tmdb"`
 }
+
+type MovieGenre struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Reference int    `json:"reference"`
+}
+
+type MovieProductionCompany struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Image     string `json:"image"`
+	Reference int    `json:"reference"`
+}
