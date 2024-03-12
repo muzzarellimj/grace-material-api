@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/database"
@@ -10,12 +11,12 @@ import (
 )
 
 func HandleGetMovie(context *gin.Context) {
-	id := context.Query("id")
+	id, err := strconv.Atoi(context.Query("id"))
 
-	if id == "" {
+	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": "Invalid numeric material identifier provided in query parameters.",
+			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
@@ -72,8 +73,5 @@ func HandleGetMovie(context *gin.Context) {
 		return
 	}
 
-	context.IndentedJSON(http.StatusNoContent, gin.H{
-		"status":  http.StatusNoContent,
-		"message": "No material with the provided numeric material identifier could be found.",
-	})
+	context.Status(http.StatusNoContent)
 }
