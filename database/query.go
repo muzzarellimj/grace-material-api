@@ -7,7 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
+	"github.com/muzzarellimj/grace-material-api/model"
 )
 
 // Create a PostgreSQL query statement with given selection, from, where, and group statements,
@@ -55,4 +57,22 @@ func ExecuteQuery(connection PgxConnection, statement string) (pgx.Rows, error) 
 	}
 
 	return response, nil
+}
+
+// Map the response from a PostgreSQL query to a supported material struct provided in the
+// Material interface.
+//
+// Return: parsed supported Material array and nil with success, empty array and error without.
+func MapResponse[M model.Material](response pgx.Rows) ([]M, error) {
+	var materials []M
+
+	err := pgxscan.ScanAll(&materials, response)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to map query response to material struct: %v\n", err)
+
+		return []M{}, err
+	}
+
+	return materials, nil
 }
