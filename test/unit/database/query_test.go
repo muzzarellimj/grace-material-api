@@ -2,54 +2,53 @@ package database_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/muzzarellimj/grace-material-api/database"
 	"github.com/muzzarellimj/grace-material-api/model"
 	"github.com/pashagolub/pgxmock/v3"
 )
 
-func TestCreateQuerySelectionFrom(t *testing.T) {
+func TestCreateQueryReturnsSelectFrom(t *testing.T) {
 	expected := "SELECT id FROM example "
 
 	query, err := database.CreateQuery("id", "example", "", "")
 
 	if query != expected || err != nil {
-		t.Fatalf("Expected query statement %s does not match actual query statement %s: %v\n", expected, query, err)
+		t.Fatalf("Actual query statement '%s' does not match expected query statement '%s': %v\n", query, expected, err)
 	}
 }
 
-func TestCreateQuerySelectionFromWhere(t *testing.T) {
+func TestCreateQueryReturnsSelectFromWhere(t *testing.T) {
 	expected := "SELECT id FROM example WHERE id=1 "
 
 	query, err := database.CreateQuery("id", "example", "id=1", "")
 
 	if query != expected || err != nil {
-		t.Fatalf("Expected query statement %s does not match actual query statement %s: %v\n", expected, query, err)
+		t.Fatalf("Actual query statement '%s' does not match expected query statement '%s': %v\n", query, expected, err)
 	}
 }
 
-func TestCreateQuerySelectionFromWhereGroup(t *testing.T) {
+func TestCreateQueryReturnsSelectFromWhereGroup(t *testing.T) {
 	expected := "SELECT id FROM example WHERE id=1 GROUP BY id"
 
 	query, err := database.CreateQuery("id", "example", "id=1", "id")
 
 	if query != expected || err != nil {
-		t.Fatalf("Expected query statement %s does not match actual query statement %s: %v\n", expected, query, err)
+		t.Fatalf("Actual query statement '%s' does not match expected query statement '%s': %v\n", query, expected, err)
 	}
 }
 
-func TestCreateQuerySelectionFromWhereGroupDirective(t *testing.T) {
+func TestCreateQueryReturnsSelectFromWhereGroupDirective(t *testing.T) {
 	expected := "SELECT example.id FROM example JOIN other ON example.id=other.id WHERE id=1 GROUP BY example.id"
 
 	query, err := database.CreateQuery("example.id", "example", "id=1", "example.id", "JOIN other ON example.id=other.id")
 
 	if query != expected || err != nil {
-		t.Fatalf("Expected query statement %s does not match actual query statement %s: %v\n", expected, query, err)
+		t.Fatalf("Actual query statement '%s' does not match expected query statement '%s': %v\n", query, expected, err)
 	}
 }
 
-func TestExecuteQuerySelects(t *testing.T) {
+func TestExecuteQueryReturnsSuccess(t *testing.T) {
 	mock, err := pgxmock.NewPool()
 
 	if err != nil {
@@ -76,7 +75,7 @@ func TestExecuteQuerySelects(t *testing.T) {
 
 func TestMapResponseReturnsSlice(t *testing.T) {
 	expectedTitle := "Encanto"
-	expectedImdbId := "tt0103639"
+	expectedReference := 812
 
 	mock, err := pgxmock.NewPool()
 
@@ -87,8 +86,8 @@ func TestMapResponseReturnsSlice(t *testing.T) {
 	defer mock.Close()
 
 	mock.ExpectQuery("SELECT x FROM movies WHERE id=1").WillReturnRows(pgxmock.
-		NewRows([]string{"id", "title", "description", "tagline", "genres", "production_companies", "release_date", "runtime", "image", "reference_imdb", "reference_tmdb"}).
-		AddRow(1, "Encanto", nil, nil, nil, nil, time.Time{}, nil, nil, "tt0103639", "812"))
+		NewRows([]string{"id", "title", "tagline", "description", "genres", "production_companies", "release_date", "runtime", "image", "reference"}).
+		AddRow(1, "Encanto", nil, nil, nil, nil, "1992-11-25", nil, nil, 812))
 
 	statement, _ := database.CreateQuery("x", "movies", "id=1", "")
 	rows, _ := database.ExecuteQuery(mock, statement)
@@ -102,8 +101,8 @@ func TestMapResponseReturnsSlice(t *testing.T) {
 		t.Fatalf("Unable to map response '%v' to internal movie struct, but without without error.", response)
 	}
 
-	if response[0].Title != expectedTitle || response[0].ReferenceImdb != expectedImdbId {
-		t.Fatalf("Actual title '%s' and IMDB ID '%s' do not match expected title '%s' and IMDB ID '%s'.", response[0].Title, response[0].ReferenceImdb, expectedTitle, expectedImdbId)
+	if response[0].Title != expectedTitle || response[0].Reference != expectedReference {
+		t.Fatalf("Actual title '%s' and reference identifier '%d' do not match expected title '%s' and reference identifier '%d'.", response[0].Title, response[0].Reference, expectedTitle, expectedReference)
 	}
 }
 
