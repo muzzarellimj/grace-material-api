@@ -11,6 +11,7 @@ import (
 
 // A wrapper interface to mask pgxpool.Pool and control local access properties.
 type PgxConnection interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	Close()
 }
