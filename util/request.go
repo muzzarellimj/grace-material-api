@@ -66,3 +66,20 @@ func CreateRequest(method string, path string, headers map[string]string) (*http
 
 	return request, nil
 }
+
+// Execute an HTTP request on a new client.
+//
+// Return: response and nil with success, nil and error without.
+func ExecuteRequest(request *http.Request) (*http.Response, error) {
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute HTTP request: %v\n", err)
+
+		return &http.Response{}, err
+	}
+
+	return response, nil
+}
