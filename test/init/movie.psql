@@ -1,0 +1,98 @@
+-- drop bridge tables
+DROP TABLE IF EXISTS movies_genres;
+DROP TABLE IF EXISTS movies_production_companies;
+
+-- drop root tables
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS movies;
+DROP TABLE IF EXISTS production_companies;
+
+-- create root tables
+CREATE TABLE genres (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (64)    NOT NULL,
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE movies (
+    id              INT             GENERATED ALWAYS AS IDENTITY,
+    title           VARCHAR (128)   NOT NULL,
+    description     VARCHAR (512),
+    tagline         VARCHAR (256),
+    release_date    DATE            NOT NULL,
+    runtime         SMALLINT,
+    image           VARCHAR (256),
+    reference_imdb  VARCHAR (24)    NOT NULL,
+    reference_tmdb  INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE production_companies (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (128)   NOT NULL,
+    image       VARCHAR (256),
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+-- create bridge tables
+CREATE TABLE movies_genres (
+    movie   INT     NOT NULL,
+    genre   INT     NOT NULL,
+
+    PRIMARY KEY (movie, genre),
+
+    CONSTRAINT fk_movie FOREIGN KEY (movie) REFERENCES movies(id),
+    CONSTRAINT fk_genre FOREIGN KEY (genre) REFERENCES genres(id)
+);
+
+CREATE TABLE movies_production_companies (
+    movie               INT     NOT NULL,
+    production_company  INT     NOT NULL,
+
+    PRIMARY KEY (movie, production_company),
+
+    CONSTRAINT fk_movie FOREIGN KEY (movie) REFERENCES movies(id),
+    CONSTRAINT fk_production_company FOREIGN KEY (production_company) REFERENCES production_companies(id)
+);
+
+-- populate root tables with https://api.themoviedb.org/3/movie/568124
+INSERT INTO genres (name, reference) 
+    VALUES  ('Animation', 16),
+            ('Comedy', 35),
+            ('Family', 10751),
+            ('Fantasy', 14);
+
+INSERT INTO movies (title, description, tagline, release_date, runtime, image, reference_imdb, reference_tmdb)
+    VALUES  ('Encanto', 'The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family—every child except one, Mirabel. But when she discovers that the magic surrounding the Encanto is in danger, Mirabel decides that she, the only ordinary Madrigal, might just be her exceptional family''s last hope.', 'There''s a little magic in all of us...almost all of us.', '2021-10-13', 102, NULL, 'tt2953050', 568124);
+
+INSERT INTO production_companies (name, image, reference)
+    VALUES  ('Walt Disney Animation Studios', NULL, 6125),
+            ('Walt Disney Pictures', NULL, 2);
+
+-- populate bridge tables
+INSERT INTO movies_genres (movie, genre)
+    SELECT movies.id, genres.id
+        FROM movies, genres
+        WHERE genres.name = 'Animation' OR genres.name = 'Comedy' OR genres.name = 'Family' OR genres.name = 'Fantasy'
+        GROUP BY movies.id, genres.id;
+
+INSERT INTO movies_production_companies (movie, production_company)
+    SELECT movies.id, production_companies.id
+        FROM movies, production_companies
+        WHERE production_companies.name = 'Walt Disney Animation Studios' OR production_companies.name = 'Walt Disney Pictures'
+        GROUP BY movies.id, production_companies.id;
+
+-- show aggregate table
+SELECT m.id, m.title, m.tagline, STRING_AGG(DISTINCT g.name, ', ') AS genres, STRING_AGG(DISTINCT p.name, ', ') AS production_companies
+    FROM movies m
+    JOIN movies_genres mg ON m.id = mg.movie
+    JOIN genres g ON g.id = mg.genre
+    JOIN movies_production_companies mp ON m.id = mp.movie
+    JOIN production_companies p ON p.id = mp.production_company
+    GROUP BY 1;
+    

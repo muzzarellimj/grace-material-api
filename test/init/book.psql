@@ -1,0 +1,123 @@
+-- drop bridge tables
+DROP TABLE IF EXISTS books_authors;
+DROP TABLE IF EXISTS books_publishers;
+DROP TABLE IF EXISTS books_topics;
+
+-- drop root tables
+DROP TABLE IF EXISTS authors;
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS publishers;
+DROP TABLE IF EXISTS topics;
+
+-- create root tables
+CREATE TABLE authors (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    firstname   VARCHAR (64)    NOT NULL,
+    middlename  VARCHAR (64),
+    lastname    VARCHAR (64),
+    biography   VARCHAR (256),
+    image       VARCHAR (256),
+    reference   VARCHAR (24)    NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE books (
+    id                  INT             GENERATED ALWAYS AS IDENTITY,
+    title               VARCHAR (128)   NOT NULL,
+    subtitle            VARCHAR (128),
+    description         VARCHAR (512),
+    publish_date        DATE            NOT NULL,
+    pages               SMALLINT,
+    isbn_10             VARCHAR (10),
+    isbn_13             VARCHAR (13),
+    image               VARCHAR (256),
+    edition_reference   VARCHAR (24)    NOT NULL,
+    work_reference      VARCHAR (24)    NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE publishers (
+    id      INT             GENERATED ALWAYS AS IDENTITY,
+    name    VARCHAR (64)    NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE topics (
+    id      INT             GENERATED ALWAYS AS IDENTITY,
+    name    VARCHAR (64)    NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+-- create bridge tables
+CREATE TABLE books_authors (
+    book    INT     NOT NULL,
+    author  INT     NOT NULL,
+
+    PRIMARY KEY (book, author),
+
+    CONSTRAINT fk_book FOREIGN KEY (book) REFERENCES books(id),
+    CONSTRAINT fk_author FOREIGN KEY (author) REFERENCES authors(id)
+);
+
+CREATE TABLE books_publishers (
+    book        INT     NOT NULL,
+    publisher   INT     NOT NULL,
+
+    PRIMARY KEY (book, publisher),
+
+    CONSTRAINT fk_book FOREIGN KEY (book) REFERENCES books(id),
+    CONSTRAINT fk_publisher FOREIGN KEY (publisher) REFERENCES publishers(id)
+);
+
+CREATE TABLE books_topics (
+    book    INT     NOT NULL,
+    topic   INT     NOT NULL,
+
+    PRIMARY KEY (book, topic),
+
+    CONSTRAINT fk_book FOREIGN KEY (book) REFERENCES books(id),
+    CONSTRAINT fk_topic FOREIGN KEY (topic) REFERENCES topics(id)
+);
+
+-- populate root tables with https://openlibrary.org/authors/OL368638A.json, https://openlibrary.org/books/OL10426195M.json, https://openlibrary.org/works/OL2577482W.json
+INSERT INTO authors (firstname, middlename, lastname, biography, image, reference) 
+    VALUES ('Andrzej', NULL, 'Sapkowski', 'A Polish fantasy writer.', NULL, 'OL368638A');
+
+INSERT INTO books (title, subtitle, description, publish_date, pages, isbn_10, isbn_13, image, edition_reference, work_reference)
+    VALUES ('The Last Wish', NULL, 'Geralt of Rivia is a witcher. A cunning sorcerer. A merciless assassin. And a cold-blooded killer. His sole purpose: to destroy the monsters that plague the world. But not everything monstrous-looking is evil and not everything fair is good... and in every fairy tale there is a grain of truth. The international hit that inspired the video game: The Witcher.', '1993-01-01', 384, '0316029181', '9780316029186', NULL, 'OL10426195M', 'OL2577482W');
+
+INSERT INTO publishers (name)
+    VALUES ('Orbit');
+
+INSERT INTO topics (name)
+    VALUES ('Fiction'), ('Fantasy');
+
+-- populate bridge tables
+INSERT INTO books_authors (book, author)
+    SELECT MAX(books.id), MAX(authors.id)
+        FROM books, authors;
+
+INSERT INTO books_publishers (book, publisher)
+    SELECT MAX(books.id), MAX(publishers.id)
+        FROM books, publishers;
+
+INSERT INTO books_topics (book, topic)
+    SELECT MAX(books.id), topics.id
+        FROM books, topics
+        WHERE topics.name = 'Fantasy' OR topics.name = 'Fiction'
+        GROUP BY topics.id;
+
+-- show aggregate table
+SELECT b.id, b.title, STRING_AGG(DISTINCT a.firstname || ' ' || a.lastname, ', ') as authors, STRING_AGG(DISTINCT p.name, ', ') AS publishers, STRING_AGG(DISTINCT t.name, ', ') AS topics
+    FROM books b
+    JOIN books_authors ba ON b.id = ba.book
+    JOIN authors a ON a.id = ba.author
+    JOIN books_publishers bp ON b.id = bp.book
+    JOIN publishers p ON p.id = bp.publisher
+    JOIN books_topics bt ON b.id = bt.book
+    JOIN topics t ON t.id = bt.topic
+    GROUP BY 1;

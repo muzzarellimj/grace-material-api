@@ -1,0 +1,148 @@
+-- drop bridge tables
+DROP TABLE IF EXISTS games_franchises;
+DROP TABLE IF EXISTS games_genres;
+DROP TABLE IF EXISTS games_platforms;
+DROP TABLE IF EXISTS games_studios;
+
+-- drop root tables
+DROP TABLE IF EXISTS franchises;
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS platforms;
+DROP TABLE IF EXISTS studios;
+
+-- create root tables
+CREATE TABLE franchises (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (128)   NOT NULL,
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE games (
+    id              INT             GENERATED ALWAYS AS IDENTITY,
+    title           VARCHAR (128)   NOT NULL,
+    summary         VARCHAR (1024),
+    storyline       VARCHAR (2048),
+    release_date    DATE,
+    image           VARCHAR (256),
+    reference       INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE genres (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (64)    NOT NULL,
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE platforms (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (128)   NOT NULL,
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE studios (
+    id          INT             GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR (128)   NOT NULL,
+    description VARCHAR (1024),
+    reference   INT             NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+-- create bridge tables
+CREATE TABLE games_franchises (
+    game        INT     NOT NULL,
+    franchise   INT     NOT NULL,
+
+    PRIMARY KEY (game, franchise),
+
+    CONSTRAINT fk_game FOREIGN KEY (game) REFERENCES games(id),
+    CONSTRAINT fk_franchise FOREIGN KEY (franchise) REFERENCES franchises(id)
+);
+
+CREATE TABLE games_genres (
+    game    INT     NOT NULL,
+    genre   INT     NOT NULL,
+
+    PRIMARY KEY (game, genre),
+
+    CONSTRAINT fk_game FOREIGN KEY (game) REFERENCES games(id),
+    CONSTRAINT fk_genre FOREIGN KEY (genre) REFERENCES genres(id)
+);
+
+CREATE TABLE games_platforms (
+    game        INT     NOT NULL,
+    platform    INT     NOT NULL,
+
+    PRIMARY KEY (game, platform),
+
+    CONSTRAINT fk_game FOREIGN KEY (game) REFERENCES games(id),
+    CONSTRAINT fk_platform FOREIGN KEY (platform) REFERENCES platforms(id)
+);
+
+CREATE TABLE games_studios (
+    game    INT     NOT NULL,
+    studio  INT     NOT NULL,
+
+    PRIMARY KEY (game, studio),
+
+    CONSTRAINT fk_game FOREIGN KEY (game) REFERENCES games(id),
+    CONSTRAINT fk_studio FOREIGN KEY (studio) REFERENCES studios(id)
+);
+
+-- populate root tables
+INSERT INTO franchises (name, reference)
+    VALUES  ('The Last of Us', 2675);
+
+INSERT INTO games (title, summary, storyline, release_date, image, reference)
+    VALUES  ('The Last of Us', 'A third person shooter/stealth/survival hybrid, in which twenty years after the outbreak of a parasitic fungus which takes over the neural functions of humans, Joel, a Texan with a tragic familial past, finds himself responsible with smuggling a fourteen year old girl named Ellie to a militia group called the Fireflies, while avoiding strict and deadly authorities, infected fungal hosts and other violent survivors.', 'Joel, a ruthless survivor with few moral lines left to cross, lives in one of the last remaining Quarantine Zones. These walled-off, oppressive cities are run by what’s left of the military. Despite the strict martial law, Joel operates in the black market of the city, smuggling contraband for the right price.\n\nJoel is asked by a dying friend to look after Ellie, a fourteen-year-old girl with courage beyond her years. What starts out as a simple job to deliver Ellie to another Quarantine Zone, soon transforms into a profound journey that will forever change Joel and Ellie.\n\nAs they journey across a post-pandemic United States, Joel and Ellie will encounter different factions of survivors that have each found a unique way of dealing with the infected humans, the lack of supplies, and the threat of other survivors. As Joel and Ellie struggle to persevere, they must learn to trust each other and work together in order to survive the realities of this new world.', '2013-06-13', NULL, 1009);
+
+INSERT INTO genres (name, reference)
+    VALUES  ('Shooter', 5),
+            ('Adventure', 31);
+
+INSERT INTO platforms (name, reference)
+    VALUES  ('PlayStation 3', 9);
+
+INSERT INTO studios (name, description, reference)
+    VALUES  ('Naughty Dog', 'Naughty Dog is one of the most successful and prolific game development studios in the world and a flagship first-party studio within PlayStation Studios. From creating the iconic Crash Bandicoot and Jak and Daxter series to modern franchises like Uncharted and The Last of Us, Naughty Dog is responsible for some of the most critically acclaimed and commercially successful games on Sony’s PlayStation platforms. Through its use of cutting-edge technology and evocative, character-driven storytelling, Naughty Dog has received hundreds of industry and media awards, while developing a passionate fan base of millions of players around the globe.', 401);
+
+-- populate bridge tables
+INSERT INTO games_franchises (game, franchise)
+    SELECT MAX(games.id), MAX(franchises.id)
+        FROM games, franchises;
+
+INSERT INTO games_genres (game, genre)
+    SELECT MAX(games.id), genres.id
+        FROM games, genres
+        WHERE genres.name = 'Adventure' OR genres.name = 'Shooter'
+        GROUP BY genres.id;
+
+INSERT INTO games_platforms (game, platform)
+    SELECT MAX(games.id), MAX(platforms.id)
+        FROM games, platforms;
+
+INSERT INTO games_studios (game, studio)
+    SELECT MAX(games.id), MAX(studios.id)
+        FROM games, studios;
+
+-- show aggregate table
+SELECT g.id, g.title, STRING_AGG(DISTINCT f.name, ', ') AS franchises, STRING_AGG(DISTINCT r.name, ', ') AS genres, STRING_AGG(DISTINCT p.name, ', ') AS platforms, STRING_AGG(DISTINCT s.name, ', ') AS studios
+    FROM games g
+    JOIN games_franchises gf ON g.id = gf.game
+    JOIN franchises f ON f.id = gf.franchise
+    JOIN games_genres gg ON g.id = gg.game
+    JOIN genres r ON r.id = gg.genre
+    JOIN games_platforms gp ON g.id = gp.game
+    JOIN platforms p ON p.id = gp.platform
+    JOIN games_studios gs ON g.id = gs.game
+    JOIN studios s ON s.id = gs.studio
+    GROUP BY g.id;
