@@ -9,7 +9,6 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
-	"github.com/muzzarellimj/grace-material-api/model"
 )
 
 // Create a PostgreSQL query statement with given selection, from, where, and group statements,
@@ -59,20 +58,19 @@ func ExecuteQuery(connection PgxConnection, statement string) (pgx.Rows, error) 
 	return response, nil
 }
 
-// Map the response from a PostgreSQL query to a supported material struct provided in the
-// Material interface.
+// Map the response from a PostgreSQL query to an interface array (e.g., Movie model struct).
 //
-// Return: parsed supported Material array and nil with success, empty array and error without.
-func MapResponse[M model.Material](response pgx.Rows) ([]M, error) {
-	var materials []M
+// Return: parsed interface array and nil with success, empty array and error without.
+func MapResponse[T interface{}](rows pgx.Rows) ([]T, error) {
+	var response []T
 
-	err := pgxscan.ScanAll(&materials, response)
+	err := pgxscan.ScanAll(&response, rows)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to map query response to material struct: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to map query response to interface: %v\n", err)
 
-		return []M{}, err
+		return []T{}, err
 	}
 
-	return materials, nil
+	return response, nil
 }
