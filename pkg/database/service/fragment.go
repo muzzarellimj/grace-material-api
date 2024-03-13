@@ -7,12 +7,6 @@ import (
 	"github.com/muzzarellimj/grace-material-api/database"
 )
 
-const (
-	TableMovies              = "movies"
-	TableGenres              = "genres"
-	TableProductionCompanies = "production_companies"
-)
-
 func FetchFragmentSlice[M interface{}](connection database.PgxConnection, table string, constraint string) ([]M, error) {
 	statement, err := database.CreateQuery("*", table, constraint, "")
 
