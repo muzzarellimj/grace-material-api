@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/muzzarellimj/grace-material-api/api"
 	"github.com/muzzarellimj/grace-material-api/database"
+	api "github.com/muzzarellimj/grace-material-api/pkg/api/movie"
 )
 
 func main() {
