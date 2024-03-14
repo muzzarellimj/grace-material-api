@@ -19,9 +19,9 @@ CREATE TABLE genres (
 CREATE TABLE movies (
     id              INT             GENERATED ALWAYS AS IDENTITY,
     title           VARCHAR (128)   NOT NULL,
-    tagline         VARCHAR (256),
-    description     VARCHAR (512),
-    release_date    DATE            NOT NULL,
+    tagline         VARCHAR (512),
+    description     VARCHAR (1028),
+    release_date    VARCHAR (24)    NOT NULL,
     runtime         SMALLINT,
     image           VARCHAR (256),
     reference       INT             NOT NULL,
@@ -67,11 +67,11 @@ INSERT INTO genres (name, reference)
             ('Fantasy', 14);
 
 INSERT INTO movies (title, description, tagline, release_date, runtime, image, reference)
-    VALUES  ('Encanto', 'There''s a little magic in all of us...almost all of us.', 'The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family—every child except one, Mirabel. But when she discovers that the magic surrounding the Encanto is in danger, Mirabel decides that she, the only ordinary Madrigal, might just be her exceptional family''s last hope.', '2021-10-13', 102, NULL, 568124);
+    VALUES  ('Encanto', 'There''s a little magic in all of us...almost all of us.', 'The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family—every child except one, Mirabel. But when she discovers that the magic surrounding the Encanto is in danger, Mirabel decides that she, the only ordinary Madrigal, might just be her exceptional family''s last hope.', '2021-10-13', 102, '', 568124);
 
 INSERT INTO production_companies (name, image, reference)
-    VALUES  ('Walt Disney Animation Studios', NULL, 6125),
-            ('Walt Disney Pictures', NULL, 2);
+    VALUES  ('Walt Disney Animation Studios', '', 6125),
+            ('Walt Disney Pictures', '', 2);
 
 -- populate bridge tables
 INSERT INTO movies_genres (movie, genre)
