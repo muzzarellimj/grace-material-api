@@ -11,44 +11,48 @@ import (
 )
 
 func fetchMovie(field string, value string) (model.Movie, string, error) {
-	movieFragment, err := fetchMovieFragment(field, value)
+	var connection db.PgxConnection = db.MovieConnection
+
+	const errorResponseMessage string = "Unable to fetch movie metadata and map to supported data structure."
+
+	movieFragment, err := service.FetchFragment[model.MovieFragment](connection, database.TableMovies, fmt.Sprintf("%s=%s", field, value))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch movie: %v\n", err)
 
-		return model.Movie{}, "Unable to fetch and map movie metadata.", err
+		return model.Movie{}, errorResponseMessage, err
 	}
 
-	movieGenreRelationships, err := fetchMovieGenreRelationships(movieFragment)
+	movieGenreRelationships, err := service.FetchRelationshipSlice[model.MovieGenreRelationship](connection, database.TableMoviesGenres, fmt.Sprintf("movie=%d", movieFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and genres: %v\n", err)
 
-		return model.Movie{}, "Unable to fetch and map movie metadata.", err
+		return model.Movie{}, errorResponseMessage, err
 	}
 
 	var genreFragments []model.MovieGenreFragment
 
 	for _, relationship := range movieGenreRelationships {
-		genreFragment, err := fetchMovieGenreFragment("id", fmt.Sprint(relationship.Genre))
+		genreFragment, err := service.FetchFragment[model.MovieGenreFragment](connection, database.TableGenres, fmt.Sprintf("id=%d", relationship.Genre))
 
 		if err == nil {
 			genreFragments = append(genreFragments, genreFragment)
 		}
 	}
 
-	movieProductionCompanyRelationships, err := fetchMovieProductionCompanyRelationships(movieFragment)
+	movieProductionCompanyRelationships, err := service.FetchRelationshipSlice[model.MovieProductionCompanyRelationship](connection, database.TableMoviesProductionCompanies, fmt.Sprintf("movie=%d", movieFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and production companies: %v\n", err)
 
-		return model.Movie{}, "Unable to fetch and map movie metadata.", err
+		return model.Movie{}, errorResponseMessage, err
 	}
 
 	var productionCompanyFragments []model.MovieProductionCompanyFragment
 
 	for _, relationship := range movieProductionCompanyRelationships {
-		productionCompanyFragment, err := fetchMovieProductionCompanyFragment("id", fmt.Sprint(relationship.ProductionCompany))
+		productionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](connection, database.TableProductionCompanies, fmt.Sprintf("id=%d", relationship.ProductionCompany))
 
 		if err == nil {
 			productionCompanyFragments = append(productionCompanyFragments, productionCompanyFragment)
@@ -71,76 +75,4 @@ func mapMovie(movieFragment model.MovieFragment, genreFragments []model.MovieGen
 		Image:               movieFragment.Image,
 		Reference:           movieFragment.Reference,
 	}
-}
-
-func fetchMovieFragment(field string, value string) (model.MovieFragment, error) {
-	response, err := service.FetchFragmentSlice[model.MovieFragment](db.MovieConnection, database.TableMovies, fmt.Sprintf("%s=%s", field, value))
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch movie fragment slice: %v\n", err)
-
-		return model.MovieFragment{}, err
-	}
-
-	if len(response) > 0 {
-		return response[0], nil
-	}
-
-	return model.MovieFragment{}, nil
-}
-
-func fetchMovieGenreFragment(field string, value string) (model.MovieGenreFragment, error) {
-	response, err := service.FetchFragmentSlice[model.MovieGenreFragment](db.MovieConnection, database.TableGenres, fmt.Sprintf("%s=%s", field, value))
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch genre fragment slice: %v\n", err)
-
-		return model.MovieGenreFragment{}, err
-	}
-
-	if len(response) > 0 {
-		return response[0], nil
-	}
-
-	return model.MovieGenreFragment{}, nil
-}
-
-func fetchMovieProductionCompanyFragment(field string, value string) (model.MovieProductionCompanyFragment, error) {
-	response, err := service.FetchFragmentSlice[model.MovieProductionCompanyFragment](db.MovieConnection, database.TableProductionCompanies, fmt.Sprintf("%s=%s", field, value))
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch production company fragment slice: %v\n", err)
-
-		return model.MovieProductionCompanyFragment{}, err
-	}
-
-	if len(response) > 0 {
-		return response[0], nil
-	}
-
-	return model.MovieProductionCompanyFragment{}, nil
-}
-
-func fetchMovieGenreRelationships(movieFragment model.MovieFragment) ([]model.MovieGenreRelationship, error) {
-	response, err := service.FetchFragmentSlice[model.MovieGenreRelationship](db.MovieConnection, database.TableMoviesGenres, fmt.Sprintf("movie=%d", movieFragment.ID))
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and genres: %v\n", err)
-
-		return []model.MovieGenreRelationship{}, err
-	}
-
-	return response, nil
-}
-
-func fetchMovieProductionCompanyRelationships(movieFragment model.MovieFragment) ([]model.MovieProductionCompanyRelationship, error) {
-	response, err := service.FetchFragmentSlice[model.MovieProductionCompanyRelationship](db.MovieConnection, database.TableMoviesProductionCompanies, fmt.Sprintf("movie=%d", movieFragment.ID))
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and production companies: %v\n", err)
-
-		return []model.MovieProductionCompanyRelationship{}, err
-	}
-
-	return response, nil
 }
