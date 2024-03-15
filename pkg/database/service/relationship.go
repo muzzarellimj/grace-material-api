@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muzzarellimj/grace-material-api/database"
+	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
-func FetchRelationship[M interface{}](connection database.PgxConnection, table string, constraint string) (M, error) {
+func FetchRelationship[M interface{}](connection connection.PgxPool, table string, constraint string) (M, error) {
 	var zero M
 
 	relationshipSlice, err := FetchFragmentSlice[M](connection, table, constraint)
@@ -25,7 +25,7 @@ func FetchRelationship[M interface{}](connection database.PgxConnection, table s
 	return zero, nil
 }
 
-func FetchRelationshipSlice[M interface{}](connection database.PgxConnection, table string, constraint string) ([]M, error) {
+func FetchRelationshipSlice[M interface{}](connection connection.PgxPool, table string, constraint string) ([]M, error) {
 	var zero []M
 
 	relationshipSlice, err := FetchFragmentSlice[M](connection, table, constraint)

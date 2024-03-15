@@ -5,9 +5,10 @@ import (
 	"os"
 
 	"github.com/muzzarellimj/grace-material-api/database"
+	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
-func FetchFragment[M interface{}](connection database.PgxConnection, table string, constraint string) (M, error) {
+func FetchFragment[M interface{}](connection connection.PgxPool, table string, constraint string) (M, error) {
 	var zero M
 
 	fragmentSlice, err := FetchFragmentSlice[M](connection, table, constraint)
@@ -25,7 +26,7 @@ func FetchFragment[M interface{}](connection database.PgxConnection, table strin
 	return zero, nil
 }
 
-func FetchFragmentSlice[M interface{}](connection database.PgxConnection, table string, constraint string) ([]M, error) {
+func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table string, constraint string) ([]M, error) {
 	statement, err := database.CreateQuery("*", table, constraint, "")
 
 	if err != nil {

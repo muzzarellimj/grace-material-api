@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	db "github.com/muzzarellimj/grace-material-api/database"
-	database "github.com/muzzarellimj/grace-material-api/pkg/database"
+	"github.com/muzzarellimj/grace-material-api/pkg/database"
+	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/service"
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/movie"
 )
 
 func fetchMovie(field string, value string) (model.Movie, string, error) {
-	var connection db.PgxConnection = db.MovieConnection
+	var connection connection.PgxPool = connection.Movie
 
 	const errorResponseMessage string = "Unable to fetch movie metadata and map to supported data structure."
 
