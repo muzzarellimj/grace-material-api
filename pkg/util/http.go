@@ -54,7 +54,9 @@ func CreateRequestPath(base string, route string, routeParam string, queryParams
 		}
 	}
 
-	path := strings.TrimSuffix(builder.String(), "&")
+	path := builder.String()
+	path = strings.ReplaceAll(path, " ", "%20")
+	path = strings.TrimSuffix(path, "&")
 
 	return path, nil
 }
