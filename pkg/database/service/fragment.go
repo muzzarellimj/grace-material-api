@@ -57,15 +57,14 @@ func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table stri
 	return response, nil
 }
 
-// Store a fragment of generic type `M` pointing to a data model within the provided table and with the provided
-// properties (column names) and named arguments.
+// Store a fragment in the provided table with the provided properties (column names) and named arguments.
 //
 // Return: the numeric identifier for the stored fragment and nil with success, or 0 and error without.
 func StoreFragment(connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
 	var names []string
 
-	for key := range arguments {
-		names = append(names, fmt.Sprint("@", key))
+	for _, property := range properties {
+		names = append(names, fmt.Sprint("@", property))
 	}
 
 	statement := fmt.Sprintf("INSERT INTO %s (%v) VALUES (%v) RETURNING id", table, strings.Join(properties, ","), strings.Join(names, ","))
@@ -85,7 +84,15 @@ func StoreFragment(connection connection.PgxPool, table string, properties []str
 	err = tx.QueryRow(context.Background(), statement, arguments).Scan(&id)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to execute insertion statement within transaction: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to execute fragment insertion statement: %v\n", err)
+
+		return 0, err
+	}
+
+	err = tx.Commit(context.Background())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to commit fragment insertion transaction: %v\n", err)
 
 		return 0, err
 	}
