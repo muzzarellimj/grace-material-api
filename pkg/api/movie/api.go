@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	tapi "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/themoviedb.org"
 )
 
 func HandleGetMovie(context *gin.Context) {
@@ -41,4 +42,70 @@ func HandleGetMovie(context *gin.Context) {
 	}
 
 	context.Status(http.StatusNoContent)
+}
+
+func HandlePostMovie(context *gin.Context) {
+	id, err := strconv.Atoi(context.Query("id"))
+
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+		})
+
+		return
+	}
+
+	existingMovie, message, err := fetchMovie("reference", fmt.Sprint(id))
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": message,
+		})
+
+		return
+	}
+
+	if existingMovie.ID != 0 {
+		context.IndentedJSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
+			"data":   existingMovie,
+		})
+
+		return
+	}
+
+	tmdbMovie, err := tapi.TMDBGetMovie(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": message,
+		})
+
+		return
+	}
+
+	if tmdbMovie.ID == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	insertedMovieId, err := storeMovie(tmdbMovie)
+
+	if err != nil || insertedMovieId == 0 {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": message,
+		})
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusCreated, gin.H{
+		"status":  http.StatusCreated,
+		"message": fmt.Sprintf("Movie inserted with numeric identifier '%d'.", insertedMovieId),
+	})
 }

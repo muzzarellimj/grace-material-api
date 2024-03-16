@@ -13,11 +13,13 @@ func main() {
 	godotenv.Load()
 
 	connection.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
+
 	defer connection.Disconnect()
 
 	router := gin.Default()
 
 	router.GET("/api/movie", api.HandleGetMovie)
+	router.POST("/api/movie", api.HandlePostMovie)
 
 	router.Run("localhost:8080")
 }
