@@ -21,5 +21,7 @@ func main() {
 	router.GET("/api/movie", api.HandleGetMovie)
 	router.POST("/api/movie", api.HandlePostMovie)
 
+	router.GET("/api/movie/search", api.HandleGetMovieSearch)
+
 	router.Run("localhost:8080")
 }

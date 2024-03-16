@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	TMDBBase          = "https://api.themoviedb.org/3"
-	TMDBEndpointMovie = "/movie/"
+	TMDBBase                = "https://api.themoviedb.org/3"
+	TMDBEndpointMovie       = "/movie"
+	TMDBEndpointSearchMovie = "/search/movie"
 )
 
 // Get the top-level details of a movie with a provided numeric identifier.
@@ -54,4 +55,47 @@ func TMDBGetMovie(id int) (model.TMDBMovieDetailResponse, error) {
 	}
 
 	return movie, nil
+}
+
+// Search movies by original, translated, or alternative title.
+//
+// Return: decoded movie search response and nil with success, empty movie search response and nil without.
+func TMDBSearchMovie(title string) (model.TMDBMovieSearchResponse, error) {
+	path, err := util.CreateRequestPath(TMDBBase, TMDBEndpointSearchMovie, "", map[string]string{"query": title, "language": "en-US"})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create request path to '%s%s': %v\n", TMDBBase, TMDBEndpointSearchMovie, err)
+
+		return model.TMDBMovieSearchResponse{}, err
+	}
+
+	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{"Authorization": fmt.Sprint("Bearer ", os.Getenv("TMDB_API_KEY"))})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)
+
+		return model.TMDBMovieSearchResponse{}, err
+	}
+
+	response, err := util.ExecuteRequest(request)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute '%s' request to '%s': %v\n", request.Method, request.URL.String(), err)
+
+		return model.TMDBMovieSearchResponse{}, err
+	}
+
+	var searchResult model.TMDBMovieSearchResponse
+
+	fmt.Println(request.URL.String())
+
+	err = json.NewDecoder(response.Body).Decode(&searchResult)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to decode response as movie search result model: %v\n", err)
+
+		return model.TMDBMovieSearchResponse{}, err
+	}
+
+	return searchResult, nil
 }

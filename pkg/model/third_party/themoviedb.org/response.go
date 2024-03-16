@@ -11,3 +11,16 @@ type TMDBMovieDetailResponse struct {
 	Runtime             int                     `json:"runtime"`
 	Image               string                  `json:"poster_path"`
 }
+
+type TMDBMovieSearchResponse struct {
+	Page         int                     `json:"page"`
+	Results      []TMDBMovieSearchResult `json:"results"`
+	TotalPages   int                     `json:"total_pages"`
+	TotalResults int                     `json:"total_results"`
+}
+
+type TMDBMovieSearchResult struct {
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+	Image string `json:"poster_path"`
+}
