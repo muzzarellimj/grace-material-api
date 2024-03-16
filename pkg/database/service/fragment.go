@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muzzarellimj/grace-material-api/database"
+	"github.com/muzzarellimj/grace-material-api/pkg/database"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
@@ -43,7 +43,7 @@ func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table stri
 		return []M{}, err
 	}
 
-	response, err := database.MapResponse[M](rows)
+	response, err := database.MapQueryResponse[M](rows)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to map fragment slice selection response: %v\n", err)

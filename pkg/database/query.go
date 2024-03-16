@@ -9,6 +9,7 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
+	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
 // Create a PostgreSQL query statement with given selection, from, where, and group statements,
@@ -19,9 +20,11 @@ func CreateQuery(selection string, from string, where string, group string, dire
 	var builder strings.Builder
 
 	if selection == "" || from == "" {
-		fmt.Fprintf(os.Stderr, "Unable to create query without 'selection' and 'from' statements.")
+		err := errors.New("unable to without 'selection' and 'from' args")
 
-		return "", errors.New("query: unable to create query without selection and from args")
+		fmt.Fprintf(os.Stderr, "Unable to create query without 'selection' and 'from' statements: %v\n", err)
+
+		return "", err
 	}
 
 	builder.WriteString(fmt.Sprintf("SELECT %s ", selection))
@@ -39,18 +42,26 @@ func CreateQuery(selection string, from string, where string, group string, dire
 		builder.WriteString(fmt.Sprintf("GROUP BY %s", group))
 	}
 
-	return builder.String(), nil
+	return strings.TrimSpace(builder.String()), nil
 }
 
 // Execute a PostgreSQL query within the given database connection and with the given
 // query statement.
 //
 // Return: pgx.Rows-type response and nil with success, nil and error without.
-func ExecuteQuery(connection PgxConnection, statement string) (pgx.Rows, error) {
+func ExecuteQuery(connection connection.PgxPool, statement string) (pgx.Rows, error) {
+	if statement == "" {
+		err := errors.New("unable to execute query without 'statement' arg")
+
+		fmt.Fprintf(os.Stderr, "Unable to execute query without 'statement' argument: %v\n", err)
+
+		return nil, err
+	}
+
 	response, err := connection.Query(context.Background(), statement)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to execute query within given connection: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to execute query: %v\n", err)
 
 		return nil, err
 	}
@@ -58,18 +69,18 @@ func ExecuteQuery(connection PgxConnection, statement string) (pgx.Rows, error) 
 	return response, nil
 }
 
-// Map the response from a PostgreSQL query to an interface array (e.g., Movie model struct).
+// Map a PostgreSQL query response to a supported data model slice.
 //
-// Return: parsed interface array and nil with success, empty array and error without.
-func MapResponse[T interface{}](rows pgx.Rows) ([]T, error) {
-	var response []T
+// Return: parsed model slice and nil with success, empty model slice and error without.
+func MapQueryResponse[M interface{}](rows pgx.Rows) ([]M, error) {
+	var response []M
 
 	err := pgxscan.ScanAll(&response, rows)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to map query response to interface: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to map query response to supported data model: %v\n", err)
 
-		return []T{}, err
+		return []M{}, err
 	}
 
 	return response, nil
