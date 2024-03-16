@@ -21,7 +21,7 @@ func HandleGetMovie(context *gin.Context) {
 		return
 	}
 
-	movie, message, err := fetchMovie("id", fmt.Sprint(id))
+	movie, message, err := fetchMovie(fmt.Sprintf("id=%d", id))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -56,7 +56,7 @@ func HandlePostMovie(context *gin.Context) {
 		return
 	}
 
-	existingMovie, message, err := fetchMovie("reference", fmt.Sprint(id))
+	existingMovie, message, err := fetchMovie(fmt.Sprintf("reference=%d", id))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{

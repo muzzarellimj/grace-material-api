@@ -12,12 +12,12 @@ import (
 	tmodel "github.com/muzzarellimj/grace-material-api/pkg/model/third_party/themoviedb.org"
 )
 
-func fetchMovie(field string, value string) (model.Movie, string, error) {
+func fetchMovie(constraint string) (model.Movie, string, error) {
 	var connection connection.PgxPool = connection.Movie
 
 	const errorResponseMessage string = "Unable to fetch movie metadata and map to supported data structure."
 
-	movieFragment, err := service.FetchFragment[model.MovieFragment](connection, database.TableMovieFragments, fmt.Sprintf("%s=%s", field, value))
+	movieFragment, err := service.FetchFragment[model.MovieFragment](connection, database.TableMovieFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch movie: %v\n", err)
