@@ -1,9 +1,12 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/muzzarellimj/grace-material-api/pkg/database"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
@@ -52,4 +55,40 @@ func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table stri
 	}
 
 	return response, nil
+}
+
+// Store a fragment of generic type `M` pointing to a data model within the provided table and with the provided
+// properties (column names) and named arguments.
+//
+// Return: the numeric identifier for the stored fragment and nil with success, or 0 and error without.
+func StoreFragment[M interface{}](connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
+	var names []string
+
+	for key := range arguments {
+		names = append(names, fmt.Sprint("@", key))
+	}
+
+	statement := fmt.Sprintf("INSERT INTO %s (%v) VALUES (%v) RETURNING id", table, strings.Join(properties, ","), strings.Join(names, ","))
+
+	tx, err := connection.Begin(context.Background())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to begin transaction to store fragment: %v\n", err)
+
+		return 0, err
+	}
+
+	defer tx.Rollback(context.Background())
+
+	var id int
+
+	err = tx.QueryRow(context.Background(), statement, arguments).Scan(&id)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute insertion statement within transaction: %v\n", err)
+
+		return 0, err
+	}
+
+	return id, nil
 }
