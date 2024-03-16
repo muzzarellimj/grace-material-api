@@ -18,7 +18,7 @@ const (
 // Get the top-level details of a movie with a provided numeric identifier.
 //
 // Return: decoded movie detail response and nil with success, empty movie detail response and error without.
-func GetMovieDetail(id int) (model.TMDBMovieDetailResponse, error) {
+func TMDBGetMovie(id int) (model.TMDBMovieDetailResponse, error) {
 	path, err := util.CreateRequestPath(TMDBBase, TMDBEndpointMovie, fmt.Sprint(id), map[string]string{})
 
 	if err != nil {
