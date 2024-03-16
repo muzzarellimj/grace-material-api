@@ -5,15 +5,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/muzzarellimj/grace-material-api/database"
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/movie"
+	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
 func main() {
 	godotenv.Load()
 
-	database.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
-	defer database.Disconnect()
+	connection.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
+	defer connection.Disconnect()
 
 	router := gin.Default()
 
