@@ -31,7 +31,7 @@ func CreateRequestPath(base string, route string, routeParam string, queryParams
 	}
 
 	if routeParam != "" {
-		_, err := builder.WriteString(routeParam)
+		_, err := builder.WriteString(fmt.Sprint("/", routeParam))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to create request path with route parameter: %v\n", err)
@@ -54,7 +54,9 @@ func CreateRequestPath(base string, route string, routeParam string, queryParams
 		}
 	}
 
-	return builder.String(), nil
+	path := strings.TrimSuffix(builder.String(), "&")
+
+	return path, nil
 }
 
 // Create an HTTP request with a request method, request path, and header map.
