@@ -19,7 +19,7 @@ func TestFetchFragmentSliceReturnsOne(t *testing.T) {
 			NewRows([]string{"id", "title", "tagline", "description", "release_date", "runtime", "image", "reference"}).
 			AddRow(1, "", "", "", "", 0, "", 0))
 
-	_, err := service.FetchFragmentSlice[model.MovieFragment](mock, database.TableMovies, "id=1")
+	_, err := service.FetchFragmentSlice[model.MovieFragment](mock, database.TableMovieFragments, "id=1")
 
 	if err != nil {
 		t.Fatalf("Unable to fetch fragment slice: %v\n", err)
@@ -43,7 +43,7 @@ func TestFetchFragmentSliceReturnsMany(t *testing.T) {
 			AddRow(1, "Action", 0).
 			AddRow(2, "Animation", 0))
 
-	_, err := service.FetchFragmentSlice[model.MovieGenreFragment](mock, database.TableGenres, "name='Action' OR name='Animation'")
+	_, err := service.FetchFragmentSlice[model.MovieGenreFragment](mock, database.TableMovieGenreFragments, "name='Action' OR name='Animation'")
 
 	if err != nil {
 		t.Fatalf("Unable to fetch fragment slice: %v\n", err)
@@ -65,7 +65,7 @@ func TestFetchFragmentSliceReturnsNone(t *testing.T) {
 		WillReturnRows(pgxmock.
 			NewRows([]string{"id", "name", "image", "reference"}))
 
-	_, err := service.FetchFragmentSlice[model.MovieProductionCompanyFragment](mock, database.TableProductionCompanies, "id=4")
+	_, err := service.FetchFragmentSlice[model.MovieProductionCompanyFragment](mock, database.TableMovieProductionCompanyFragments, "id=4")
 
 	if err != nil {
 		t.Fatalf("Unable to fetch fragment slice: %v\n", err)
