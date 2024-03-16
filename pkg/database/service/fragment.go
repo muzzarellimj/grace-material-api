@@ -61,7 +61,7 @@ func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table stri
 // properties (column names) and named arguments.
 //
 // Return: the numeric identifier for the stored fragment and nil with success, or 0 and error without.
-func StoreFragment[M interface{}](connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
+func StoreFragment(connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
 	var names []string
 
 	for key := range arguments {
