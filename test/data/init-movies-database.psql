@@ -19,11 +19,11 @@ CREATE TABLE genres (
 CREATE TABLE movies (
     id              INT             GENERATED ALWAYS AS IDENTITY,
     title           VARCHAR (128)   NOT NULL,
-    tagline         VARCHAR (512),
-    description     VARCHAR (1028),
+    tagline         VARCHAR (512)   NOT NULL,
+    description     VARCHAR (1028)  NOT NULL,
     release_date    VARCHAR (24)    NOT NULL,
-    runtime         SMALLINT,
-    image           VARCHAR (256),
+    runtime         SMALLINT        NOT NULL,
+    image           VARCHAR (256)   NOT NULL,
     reference       INT             NOT NULL,
 
     PRIMARY KEY (id)
@@ -32,7 +32,7 @@ CREATE TABLE movies (
 CREATE TABLE production_companies (
     id          INT             GENERATED ALWAYS AS IDENTITY,
     name        VARCHAR (128)   NOT NULL,
-    image       VARCHAR (256),
+    image       VARCHAR (256)   NOT NULL,
     reference   INT             NOT NULL,
 
     PRIMARY KEY (id)
