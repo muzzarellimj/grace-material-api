@@ -13,10 +13,10 @@ DROP TABLE IF EXISTS topics;
 CREATE TABLE authors (
     id          INT             GENERATED ALWAYS AS IDENTITY,
     firstname   VARCHAR (64)    NOT NULL,
-    middlename  VARCHAR (64),
-    lastname    VARCHAR (64),
-    biography   VARCHAR (256),
-    image       VARCHAR (256),
+    middlename  VARCHAR (64)    NOT NULL,
+    lastname    VARCHAR (64)    NOT NULL,
+    biography   VARCHAR (256)   NOT NULL,
+    image       VARCHAR (256)   NOT NULL,
     reference   VARCHAR (24)    NOT NULL,
 
     PRIMARY KEY (id)
@@ -25,13 +25,13 @@ CREATE TABLE authors (
 CREATE TABLE books (
     id                  INT             GENERATED ALWAYS AS IDENTITY,
     title               VARCHAR (128)   NOT NULL,
-    subtitle            VARCHAR (128),
-    description         VARCHAR (512),
-    publish_date        DATE            NOT NULL,
-    pages               SMALLINT,
-    isbn_10             VARCHAR (10),
-    isbn_13             VARCHAR (13),
-    image               VARCHAR (256),
+    subtitle            VARCHAR (128)   NOT NULL,
+    description         VARCHAR (512)   NOT NULL,
+    publish_date        VARCHAR(24)     NOT NULL,
+    pages               SMALLINT        NOT NULL,
+    isbn10              VARCHAR (10)    NOT NULL,
+    isbn13              VARCHAR (13)    NOT NULL,
+    image               VARCHAR (256)   NOT NULL,
     edition_reference   VARCHAR (24)    NOT NULL,
     work_reference      VARCHAR (24)    NOT NULL,
 
@@ -85,10 +85,10 @@ CREATE TABLE books_topics (
 
 -- populate root tables with https://openlibrary.org/authors/OL368638A.json, https://openlibrary.org/books/OL10426195M.json, https://openlibrary.org/works/OL2577482W.json
 INSERT INTO authors (firstname, middlename, lastname, biography, image, reference) 
-    VALUES ('Andrzej', NULL, 'Sapkowski', 'A Polish fantasy writer.', NULL, 'OL368638A');
+    VALUES ('Andrzej', '', 'Sapkowski', 'A Polish fantasy writer.', '', 'OL368638A');
 
-INSERT INTO books (title, subtitle, description, publish_date, pages, isbn_10, isbn_13, image, edition_reference, work_reference)
-    VALUES ('The Last Wish', NULL, 'Geralt of Rivia is a witcher. A cunning sorcerer. A merciless assassin. And a cold-blooded killer. His sole purpose: to destroy the monsters that plague the world. But not everything monstrous-looking is evil and not everything fair is good... and in every fairy tale there is a grain of truth. The international hit that inspired the video game: The Witcher.', '1993-01-01', 384, '0316029181', '9780316029186', NULL, 'OL10426195M', 'OL2577482W');
+INSERT INTO books (title, subtitle, description, publish_date, pages, isbn10, isbn13, image, edition_reference, work_reference)
+    VALUES ('The Last Wish', '', 'Geralt of Rivia is a witcher. A cunning sorcerer. A merciless assassin. And a cold-blooded killer. His sole purpose: to destroy the monsters that plague the world. But not everything monstrous-looking is evil and not everything fair is good... and in every fairy tale there is a grain of truth. The international hit that inspired the video game: The Witcher.', '1993-01-01', 384, '0316029181', '9780316029186', '', 'OL10426195M', 'OL2577482W');
 
 INSERT INTO publishers (name)
     VALUES ('Orbit');
