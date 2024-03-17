@@ -12,9 +12,9 @@ DROP TABLE IF EXISTS topics;
 -- create root tables
 CREATE TABLE authors (
     id          INT             GENERATED ALWAYS AS IDENTITY,
-    firstname   VARCHAR (64)    NOT NULL,
-    middlename  VARCHAR (64)    NOT NULL,
-    lastname    VARCHAR (64)    NOT NULL,
+    first_name   VARCHAR (64)    NOT NULL,
+    middle_name  VARCHAR (64)    NOT NULL,
+    last_name    VARCHAR (64)    NOT NULL,
     biography   VARCHAR (256)   NOT NULL,
     image       VARCHAR (256)   NOT NULL,
     reference   VARCHAR (24)    NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE books_topics (
 );
 
 -- populate root tables with https://openlibrary.org/authors/OL368638A.json, https://openlibrary.org/books/OL10426195M.json, https://openlibrary.org/works/OL2577482W.json
-INSERT INTO authors (firstname, middlename, lastname, biography, image, reference) 
+INSERT INTO authors (first_name, middle_name, last_name, biography, image, reference) 
     VALUES ('Andrzej', '', 'Sapkowski', 'A Polish fantasy writer.', '', 'OL368638A');
 
 INSERT INTO books (title, subtitle, description, publish_date, pages, isbn10, isbn13, image, edition_reference, work_reference)
@@ -112,7 +112,7 @@ INSERT INTO books_topics (book, topic)
         GROUP BY topics.id;
 
 -- show aggregate table
-SELECT b.id, b.title, STRING_AGG(DISTINCT a.firstname || ' ' || a.lastname, ', ') as authors, STRING_AGG(DISTINCT p.name, ', ') AS publishers, STRING_AGG(DISTINCT t.name, ', ') AS topics
+SELECT b.id, b.title, STRING_AGG(DISTINCT a.first_name || ' ' || a.last_name, ', ') as authors, STRING_AGG(DISTINCT p.name, ', ') AS publishers, STRING_AGG(DISTINCT t.name, ', ') AS topics
     FROM books b
     JOIN books_authors ba ON b.id = ba.book
     JOIN authors a ON a.id = ba.author

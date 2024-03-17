@@ -16,9 +16,9 @@ type BookFragment struct {
 
 type BookAuthorFragment struct {
 	ID         int    `json:"id"`
-	FirstName  string `json:"firstname"`
-	MiddleName string `json:"middlename"`
-	LastName   string `json:"lastname"`
+	FirstName  string `json:"first_name"`
+	MiddleName string `json:"middle_name"`
+	LastName   string `json:"last_name"`
 	Biography  string `json:"biography"`
 	Image      string `json:"image"`
 	Reference  string `json:"reference"`
