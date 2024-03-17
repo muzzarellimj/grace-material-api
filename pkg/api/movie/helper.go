@@ -80,9 +80,25 @@ func mapMovie(movieFragment model.MovieFragment, genreFragments []model.MovieGen
 }
 
 func storeMovie(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
-	var connection connection.PgxPool = connection.Movie
+	movieId, err := storeMovieFragment(tmdbMovie)
 
-	storedMovieId, err := service.StoreFragment(connection, database.TableMovieFragments, database.PropertiesMovieFragments, pgx.NamedArgs{
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to store movie: %v\n", err)
+
+		return 0, err
+	}
+
+	genreIdSlice := storeGenreFragments(tmdbMovie.Genres)
+	productionCompanyIdSlice := storeProductionCompanyFragments(tmdbMovie.ProductionCompanies)
+
+	storeMovieGenreRelationships(movieId, genreIdSlice)
+	storeMovieProductionCompanyRelationships(movieId, productionCompanyIdSlice)
+
+	return movieId, nil
+}
+
+func storeMovieFragment(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
+	movieId, err := service.StoreFragment(connection.Movie, database.TableMovieFragments, database.PropertiesMovieFragments, pgx.NamedArgs{
 		"title":        tmdbMovie.Title,
 		"tagline":      tmdbMovie.Tagline,
 		"description":  tmdbMovie.Overview,
@@ -98,90 +114,106 @@ func storeMovie(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
 		return 0, err
 	}
 
-	var storedGenreIds []int
+	return movieId, nil
+}
 
-	for _, genre := range tmdbMovie.Genres {
-		genreFragment, err := service.FetchFragment[model.MovieGenreFragment](connection, database.TableMovieGenreFragments, fmt.Sprintf("reference=%d", genre.ID))
+func storeGenreFragments(genres []tmodel.TMDBGenre) []int {
+	var genreIdSlice []int
+
+	for _, genre := range genres {
+		existingGenreFragment, err := service.FetchFragment[model.MovieGenreFragment](connection.Movie, database.TableMovieGenreFragments, fmt.Sprintf("reference=%d", genre.ID))
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to fetch genre fragment: %v\n", err)
-		}
-
-		if genreFragment.ID != 0 {
-			storedGenreIds = append(storedGenreIds, genreFragment.ID)
+			fmt.Fprintf(os.Stderr, "Unable to fetch existing genre fragment: %v\n", err)
 
 			continue
 		}
 
-		storedGenreId, err := service.StoreFragment(connection, database.TableMovieGenreFragments, database.PropertiesMovieGenreFragments, pgx.NamedArgs{
+		if existingGenreFragment.ID != 0 {
+			genreIdSlice = append(genreIdSlice, existingGenreFragment.ID)
+
+			continue
+		}
+
+		storedGenreId, err := service.StoreFragment(connection.Movie, database.TableMovieGenreFragments, database.PropertiesMovieGenreFragments, pgx.NamedArgs{
 			"name":      genre.Name,
 			"reference": genre.ID,
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store genre fragment: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Unable to store new genre fragment: %v\n", err)
 
 			continue
 		}
 
 		if storedGenreId != 0 {
-			storedGenreIds = append(storedGenreIds, storedGenreId)
+			genreIdSlice = append(genreIdSlice, storedGenreId)
 		}
 	}
 
-	var storedProductionCompanyIds []int
+	return genreIdSlice
+}
 
-	for _, productionCompany := range tmdbMovie.ProductionCompanies {
-		productionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](connection, database.TableMovieProductionCompanyFragments, fmt.Sprintf("reference=%d", productionCompany.ID))
+func storeProductionCompanyFragments(productionCompanies []tmodel.TMDBProductionCompany) []int {
+	var productionCompanyIdSlice []int
+
+	for _, productionCompany := range productionCompanies {
+		existingProductionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](connection.Movie, database.TableMovieProductionCompanyFragments, fmt.Sprintf("reference=%d", productionCompany.ID))
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to fetch production company fragment: %v\n", err)
-		}
-
-		if productionCompanyFragment.ID != 0 {
-			storedProductionCompanyIds = append(storedProductionCompanyIds, productionCompanyFragment.ID)
+			fmt.Fprintf(os.Stderr, "Unable to fetch existing production company fragment: %v\n", err)
 
 			continue
 		}
 
-		storedProductionCompanyId, err := service.StoreFragment(connection, database.TableMovieProductionCompanyFragments, database.PropertiesMovieProductionCompanyFragments, pgx.NamedArgs{
+		if existingProductionCompanyFragment.ID != 0 {
+			productionCompanyIdSlice = append(productionCompanyIdSlice, existingProductionCompanyFragment.ID)
+
+			continue
+		}
+
+		storedProductionCompanyId, err := service.StoreFragment(connection.Movie, database.TableMovieProductionCompanyFragments, database.PropertiesMovieProductionCompanyFragments, pgx.NamedArgs{
 			"name":      productionCompany.Name,
 			"image":     productionCompany.Image,
 			"reference": productionCompany.ID,
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store genre fragment: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Unable to store new production company fragment: %v\n", err)
 
 			continue
 		}
 
 		if storedProductionCompanyId != 0 {
-			storedProductionCompanyIds = append(storedProductionCompanyIds, storedProductionCompanyId)
+			productionCompanyIdSlice = append(productionCompanyIdSlice, storedProductionCompanyId)
 		}
 	}
 
-	for _, storedGenreId := range storedGenreIds {
-		err := service.StoreRelationship(connection, database.TableMovieGenreRelationships, database.PropertiesMovieGenreRelationships, pgx.NamedArgs{
-			"movie": storedMovieId,
-			"genre": storedGenreId,
+	return productionCompanyIdSlice
+}
+
+func storeMovieGenreRelationships(movieId int, genreIdSlice []int) {
+	for _, genreId := range genreIdSlice {
+		err := service.StoreRelationship(connection.Movie, database.TableMovieGenreRelationships, database.PropertiesMovieGenreRelationships, pgx.NamedArgs{
+			"movie": movieId,
+			"genre": genreId,
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store relationship between movie and genre: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Unable to store new relationship between movie '%d' and genre '%d': %v\n", movieId, genreId, err)
 		}
 	}
+}
 
-	for _, storedProductionCompanyId := range storedProductionCompanyIds {
-		err := service.StoreRelationship(connection, database.TableMovieProductionCompanyRelationships, database.PropertiesMovieProductionCompanyRelationships, pgx.NamedArgs{
-			"movie":              storedMovieId,
-			"production_company": storedProductionCompanyId,
+func storeMovieProductionCompanyRelationships(movieId int, productionCompanyIdSlice []int) {
+	for _, productionCompanyId := range productionCompanyIdSlice {
+		err := service.StoreRelationship(connection.Movie, database.TableMovieProductionCompanyRelationships, database.PropertiesMovieProductionCompanyRelationships, pgx.NamedArgs{
+			"movie":              movieId,
+			"production_company": productionCompanyId,
 		})
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store relationship between movie and production company: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Unable to store new relationship between movie '%d' and production company '%d': %v\n", movieId, productionCompanyId, err)
 		}
 	}
-
-	return storedMovieId, nil
 }
