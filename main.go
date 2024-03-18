@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	api "github.com/muzzarellimj/grace-material-api/pkg/api/movie"
+	bookApi "github.com/muzzarellimj/grace-material-api/pkg/api/book"
+	movieApi "github.com/muzzarellimj/grace-material-api/pkg/api/movie"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
@@ -18,10 +19,12 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/api/movie", api.HandleGetMovie)
-	router.POST("/api/movie", api.HandlePostMovie)
+	router.GET("/api/book", bookApi.HandleGetBook)
 
-	router.GET("/api/movie/search", api.HandleGetMovieSearch)
+	router.GET("/api/movie", movieApi.HandleGetMovie)
+	router.POST("/api/movie", movieApi.HandlePostMovie)
+
+	router.GET("/api/movie/search", movieApi.HandleGetMovieSearch)
 
 	router.Run("localhost:8080")
 }
