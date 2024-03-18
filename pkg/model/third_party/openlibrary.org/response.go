@@ -16,7 +16,7 @@ type OLEditionResponse struct {
 	PublishDate string                `json:"publish_date"`
 	Format      string                `json:"physical_format"`
 	Pages       int                   `json:"number_of_pages"`
-	Images      []string              `json:"covers"`
+	Images      []int                 `json:"covers"`
 	ISBN10      []string              `json:"isbn_10"`
 	ISBN13      []string              `json:"isbn_13"`
 	Works       []OLResourceReference `json:"works"`
