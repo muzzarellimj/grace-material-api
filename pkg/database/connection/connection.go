@@ -9,6 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+var Book PgxPool
+var Game PgxPool
 var Movie PgxPool
 
 // A wrapper to mask pgxpool.Pool as a local interface.
@@ -22,6 +24,8 @@ type PgxPool interface {
 func Connect(username string, password string, host string, port string) {
 	fmt.Fprint(os.Stdout, "Connecting the Grace database pools...")
 
+	Book = connect(username, password, host, port, os.Getenv("BOOK_DATABASE_NAME"))
+	Game = connect(username, password, host, port, os.Getenv("GAME_DATABASE_NAME"))
 	Movie = connect(username, password, host, port, os.Getenv("MOVIE_DATABASE_NAME"))
 }
 
@@ -44,5 +48,7 @@ func connect(username string, password string, host string, port string, databas
 
 // Disconnect the Grace database pools.
 func Disconnect() {
+	Book.Close()
+	Game.Close()
 	Movie.Close()
 }
