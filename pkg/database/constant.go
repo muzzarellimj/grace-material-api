@@ -29,19 +29,19 @@ const (
 
 // Properties (or columns names) per database table.
 var (
-	PropertiesBookFragments              = []string{"id", "title", "subtitle", "description", "publish_date", "pages", "isbn10", "isbn13", "image", "edition_reference", "work_reference"}
-	PropertiesBookAuthorFragments        = []string{"id", "firstname", "middlename", "lastname", "biography", "image", "reference"}
-	PropertiesBookPublisherFragments     = []string{"id", "name"}
-	PropertiesBookTopicFragments         = []string{"id", "name"}
+	PropertiesBookFragments              = []string{"title", "subtitle", "description", "publish_date", "pages", "isbn10", "isbn13", "image", "edition_reference", "work_reference"}
+	PropertiesBookAuthorFragments        = []string{"first_name", "middle_name", "last_name", "biography", "image", "reference"}
+	PropertiesBookPublisherFragments     = []string{"name"}
+	PropertiesBookTopicFragments         = []string{"name"}
 	PropertiesBookAuthorRelationships    = []string{"book", "author"}
 	PropertiesBookPublisherRelationships = []string{"book", "publisher"}
 	PropertiesBookTopicRelationships     = []string{"book", "topic"}
 
-	PropertiesGameFragments              = []string{"id", "title", "summary", "storyline", "release_date", "image", "reference"}
-	PropertiesGameFranchiseFragments     = []string{"id", "name", "reference"}
-	PropertiesGameGenreFragments         = []string{"id", "name", "reference"}
-	PropertiesGamePlatformFragments      = []string{"id", "name", "reference"}
-	PropertiesGameStudioFragments        = []string{"id", "name", "description", "reference"}
+	PropertiesGameFragments              = []string{"title", "summary", "storyline", "release_date", "image", "reference"}
+	PropertiesGameFranchiseFragments     = []string{"name", "reference"}
+	PropertiesGameGenreFragments         = []string{"name", "reference"}
+	PropertiesGamePlatformFragments      = []string{"name", "reference"}
+	PropertiesGameStudioFragments        = []string{"name", "description", "reference"}
 	PropertiesGameFranchiseRelationships = []string{"game", "franchise"}
 	PropertiesGameGenreRelationships     = []string{"game", "genre"}
 	PropertiesGamePlatformRelationships  = []string{"game", "platform"}
