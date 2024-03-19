@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 )
 
 func HandleGetBook(context *gin.Context) {
@@ -41,4 +43,66 @@ func HandleGetBook(context *gin.Context) {
 	}
 
 	context.Status(http.StatusNoContent)
+}
+
+func HandlePostBook(context *gin.Context) {
+	errorResponseMessage := "Unable to fetch book metadata and map to supported data structure."
+
+	id := strings.ReplaceAll(context.Query("id"), "-", "")
+
+	if id == "" {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+		})
+
+		return
+	}
+
+	existingBook, err := fetchBook(fmt.Sprintf("isbn13='%s' OR edition_reference='%s'", id, id))
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	if existingBook.ID != 0 {
+		context.IndentedJSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
+			"data":   existingBook,
+		})
+
+		return
+	}
+
+	olBook, err := api.OLGetEdition(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	insertedBookId, err := storeBook(olBook)
+
+	if err != nil || insertedBookId == 0 {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusCreated, gin.H{
+		"status":  http.StatusCreated,
+		"message": fmt.Sprintf("Book inserted with numeric identifier '%d'.", insertedBookId),
+	})
 }

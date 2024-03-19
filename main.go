@@ -20,6 +20,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/api/book", bookApi.HandleGetBook)
+	router.POST("/api/book", bookApi.HandlePostBook)
 
 	router.GET("/api/movie", movieApi.HandleGetMovie)
 	router.POST("/api/movie", movieApi.HandlePostMovie)

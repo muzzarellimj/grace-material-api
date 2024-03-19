@@ -1,13 +1,19 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"reflect"
+	"strings"
 
+	"github.com/jackc/pgx/v5"
+	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 	"github.com/muzzarellimj/grace-material-api/pkg/database"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/service"
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/book"
+	tmodel "github.com/muzzarellimj/grace-material-api/pkg/model/third_party/openlibrary.org"
 )
 
 func fetchBook(constraint string) (model.Book, error) {
@@ -136,5 +142,285 @@ func mapBook(bookFragment model.BookFragment, authorFragmentSlice []model.BookAu
 		Image:            bookFragment.Image,
 		EditionReference: bookFragment.EditionReference,
 		WorkReference:    bookFragment.WorkReference,
+	}
+}
+
+func storeBook(olEdition tmodel.OLEditionResponse) (int, error) {
+	olWork, err := fetchOLWork(olEdition.Works)
+
+	if olWork.ID == "" || err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to fetch work related to '%s': %v\n", olEdition.ID, err)
+
+		return 0, err
+	}
+
+	bookId, err := storeBookFragment(olEdition, olWork)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to store book fragment: %v\n", err)
+
+		return 0, err
+	}
+
+	authorIdSlice := storeAuthorFragments(olEdition.Authors)
+	publisherIdSlice := storePublisherFragments(olEdition.Publishers)
+	topicIdSlice := storeTopicFragments(olWork.Subjects)
+
+	storeBookAuthorRelationships(bookId, authorIdSlice)
+	storeBookPublisherRelationships(bookId, publisherIdSlice)
+	storeBookTopicRelationships(bookId, topicIdSlice)
+
+	return bookId, nil
+}
+
+func fetchOLWork(references []tmodel.OLResourceReference) (tmodel.OLWorkResponse, error) {
+	var zero tmodel.OLWorkResponse
+
+	if len(references) == 0 {
+		err := errors.New("unable to fetch related work with empty work reference slice")
+
+		fmt.Fprintf(os.Stderr, "Unable to fetch related work with empty reference slice: %v\n", err)
+
+		return zero, err
+	}
+
+	id := strings.ReplaceAll(references[0].ID, "/works/", "")
+
+	olWork, err := api.OLGetWork(id)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to fetch work '%s': %v\n", id, err)
+
+		return zero, err
+	}
+
+	return olWork, nil
+}
+
+func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkResponse) (int, error) {
+	var imageId int
+	var description, isbn10, isbn13 string
+
+	if len(olEdition.Images) > 0 {
+		imageId = olEdition.Images[0]
+	}
+
+	if len(olEdition.ISBN10) > 0 {
+		isbn10 = olEdition.ISBN10[0]
+	}
+
+	if len(olEdition.ISBN13) > 0 {
+		isbn13 = olEdition.ISBN13[0]
+	}
+
+	if reflect.TypeOf(olWork.Description) == reflect.TypeFor[string]() {
+		description = olWork.Description.(string)
+	}
+
+	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
+		"title":             olEdition.Title,
+		"subtitle":          olEdition.Subtitle,
+		"description":       description,
+		"publish_date":      olEdition.PublishDate,
+		"pages":             olEdition.Pages,
+		"isbn10":            isbn10,
+		"isbn13":            isbn13,
+		"image":             fmt.Sprint(imageId),
+		"edition_reference": olEdition.ID,
+		"work_reference":    olWork.ID,
+	})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to store book fragment: %v\n", err)
+
+		return 0, err
+	}
+
+	return bookId, nil
+}
+
+func storeAuthorFragments(authors []tmodel.OLResourceReference) []int {
+	var authorIdSlice []int
+
+	for _, author := range authors {
+		existingAuthorFragment, err := service.FetchFragment[model.BookAuthorFragment](connection.Book, database.TableBookAuthorFragments, fmt.Sprintf("reference='%s'", author.ID))
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch existing author fragment: %v\n", err)
+
+			continue
+		}
+
+		if existingAuthorFragment.ID != 0 {
+			authorIdSlice = append(authorIdSlice, existingAuthorFragment.ID)
+
+			continue
+		}
+
+		olAuthor, err := api.OLGetAuthor(strings.ReplaceAll(author.ID, "/authors/", ""))
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch OL author resource: %v\n", err)
+
+			continue
+		}
+
+		first, middle, last := formatAuthorName(olAuthor.Name)
+
+		var imageId int
+
+		if len(olAuthor.Images) > 0 {
+			imageId = olAuthor.Images[0]
+		}
+
+		storedAuthorId, err := service.StoreFragment(connection.Book, database.TableBookAuthorFragments, database.PropertiesBookAuthorFragments, pgx.NamedArgs{
+			"first_name":  first,
+			"middle_name": middle,
+			"last_name":   last,
+			"biography":   olAuthor.Biography,
+			"image":       fmt.Sprint(imageId),
+			"reference":   olAuthor.ID,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new author fragment: %v\n", err)
+
+			continue
+		}
+
+		if storedAuthorId != 0 {
+			authorIdSlice = append(authorIdSlice, storedAuthorId)
+		}
+	}
+
+	return authorIdSlice
+}
+
+func formatAuthorName(name string) (string, string, string) {
+	nameSlice := strings.Split(name, " ")
+
+	if len(nameSlice) == 1 {
+		return nameSlice[0], "", ""
+	}
+
+	if len(nameSlice) == 2 {
+		return nameSlice[0], "", nameSlice[1]
+	}
+
+	if len(nameSlice) == 3 {
+		return nameSlice[0], nameSlice[1], nameSlice[2]
+	}
+
+	return name, "", ""
+}
+
+func storePublisherFragments(publishers []string) []int {
+	var publisherIdSlice []int
+
+	for _, publisher := range publishers {
+		existingPublisherFragment, err := service.FetchFragment[model.BookPublisherFragment](connection.Book, database.TableBookPublisherFragments, fmt.Sprintf("name='%s'", publisher))
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch existing publisher fragment: %v\n", err)
+
+			continue
+		}
+
+		if existingPublisherFragment.ID != 0 {
+			publisherIdSlice = append(publisherIdSlice, existingPublisherFragment.ID)
+
+			continue
+		}
+
+		storedPublisherId, err := service.StoreFragment(connection.Book, database.TableBookPublisherFragments, database.PropertiesBookPublisherFragments, pgx.NamedArgs{
+			"name": publisher,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new publisher fragment: %v\n", err)
+
+			continue
+		}
+
+		if storedPublisherId != 0 {
+			publisherIdSlice = append(publisherIdSlice, storedPublisherId)
+		}
+	}
+
+	return publisherIdSlice
+}
+
+func storeTopicFragments(topics []string) []int {
+	var topicIdSlice []int
+
+	for _, topic := range topics {
+		existingTopicFragment, err := service.FetchFragment[model.BookTopicFragment](connection.Book, database.TableBookTopicFragments, fmt.Sprintf("name='%s'", topic))
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch existing topic fragment: %v\n", err)
+
+			continue
+		}
+
+		if existingTopicFragment.ID != 0 {
+			topicIdSlice = append(topicIdSlice, existingTopicFragment.ID)
+
+			continue
+		}
+
+		storedTopicId, err := service.StoreFragment(connection.Book, database.TableBookTopicFragments, database.PropertiesBookTopicFragments, pgx.NamedArgs{
+			"name": topic,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new topic fragment: %v\n", err)
+
+			continue
+		}
+
+		if storedTopicId != 0 {
+			topicIdSlice = append(topicIdSlice, storedTopicId)
+		}
+	}
+
+	return topicIdSlice
+}
+
+func storeBookAuthorRelationships(bookId int, authorIdSlice []int) {
+	for _, authorId := range authorIdSlice {
+		err := service.StoreRelationship(connection.Book, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, pgx.NamedArgs{
+			"book":   bookId,
+			"author": authorId,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and author '%d': %v\n", bookId, authorId, err)
+		}
+	}
+}
+
+func storeBookPublisherRelationships(bookId int, publisherIdSlice []int) {
+	for _, publisherId := range publisherIdSlice {
+		err := service.StoreRelationship(connection.Book, database.TableBookPublisherRelationships, database.PropertiesBookPublisherRelationships, pgx.NamedArgs{
+			"book":      bookId,
+			"publisher": publisherId,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and publisher '%d': %v\n", bookId, publisherId, err)
+		}
+	}
+}
+
+func storeBookTopicRelationships(bookId int, topicIdSlice []int) {
+	for _, topicId := range topicIdSlice {
+		err := service.StoreRelationship(connection.Book, database.TableBookTopicRelationships, database.PropertiesBookTopicRelationships, pgx.NamedArgs{
+			"book":  bookId,
+			"topic": topicId,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and topic '%d': %v\n", bookId, topicId, err)
+		}
 	}
 }
