@@ -13,6 +13,7 @@ import (
 	"github.com/muzzarellimj/grace-material-api/pkg/database/service"
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/book"
 	tmodel "github.com/muzzarellimj/grace-material-api/pkg/model/third_party/openlibrary.org"
+	"github.com/muzzarellimj/grace-material-api/pkg/util"
 )
 
 func fetchBook(constraint string) (model.Book, error) {
@@ -157,9 +158,26 @@ func storeBook(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (in
 	publisherIdSlice := storePublisherFragments(edition.Publishers)
 	topicIdSlice := storeTopicFragments(work.Subjects)
 
-	storeBookAuthorRelationships(bookId, authorIdSlice)
-	storeBookPublisherRelationships(bookId, publisherIdSlice)
-	storeBookTopicRelationships(bookId, topicIdSlice)
+	service.StoreRelationshipSlice(connection.Book, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, service.RelationshipSliceArgument{
+		SourceName:          "book",
+		SourceArgument:      bookId,
+		DestinationName:     "author",
+		DestinationArgument: authorIdSlice,
+	})
+
+	service.StoreRelationshipSlice(connection.Book, database.TableBookPublisherRelationships, database.PropertiesBookPublisherRelationships, service.RelationshipSliceArgument{
+		SourceName:          "book",
+		SourceArgument:      bookId,
+		DestinationName:     "publisher",
+		DestinationArgument: publisherIdSlice,
+	})
+
+	service.StoreRelationshipSlice(connection.Book, database.TableBookTopicRelationships, database.PropertiesBookTopicRelationships, service.RelationshipSliceArgument{
+		SourceName:          "book",
+		SourceArgument:      bookId,
+		DestinationName:     "topic",
+		DestinationArgument: topicIdSlice,
+	})
 
 	return bookId, nil
 }
@@ -308,7 +326,7 @@ func storeTopicFragments(topics []string) []int {
 	var topicIdSlice []int
 
 	for _, topic := range topics {
-		existingTopicFragment, err := service.FetchFragment[model.BookTopicFragment](connection.Book, database.TableBookTopicFragments, fmt.Sprintf("name='%s'", topic))
+		existingTopicFragment, err := service.FetchFragment[model.BookTopicFragment](connection.Book, database.TableBookTopicFragments, fmt.Sprintf("name='%s'", util.FormatPSQLString(topic)))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing topic fragment: %v\n", err)
@@ -338,43 +356,4 @@ func storeTopicFragments(topics []string) []int {
 	}
 
 	return topicIdSlice
-}
-
-func storeBookAuthorRelationships(bookId int, authorIdSlice []int) {
-	for _, authorId := range authorIdSlice {
-		err := service.StoreRelationship(connection.Book, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, pgx.NamedArgs{
-			"book":   bookId,
-			"author": authorId,
-		})
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and author '%d': %v\n", bookId, authorId, err)
-		}
-	}
-}
-
-func storeBookPublisherRelationships(bookId int, publisherIdSlice []int) {
-	for _, publisherId := range publisherIdSlice {
-		err := service.StoreRelationship(connection.Book, database.TableBookPublisherRelationships, database.PropertiesBookPublisherRelationships, pgx.NamedArgs{
-			"book":      bookId,
-			"publisher": publisherId,
-		})
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and publisher '%d': %v\n", bookId, publisherId, err)
-		}
-	}
-}
-
-func storeBookTopicRelationships(bookId int, topicIdSlice []int) {
-	for _, topicId := range topicIdSlice {
-		err := service.StoreRelationship(connection.Book, database.TableBookTopicRelationships, database.PropertiesBookTopicRelationships, pgx.NamedArgs{
-			"book":  bookId,
-			"topic": topicId,
-		})
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to store new relationship between book '%d' and topic '%d': %v\n", bookId, topicId, err)
-		}
-	}
 }
