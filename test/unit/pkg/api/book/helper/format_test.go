@@ -65,3 +65,22 @@ func TestExtractISBNReturnsEmptyString(t *testing.T) {
 		t.Fatalf("Actual ISBN '%s' does not match expected empty ISBN.", actual)
 	}
 }
+
+func TestExtractResourceIdReturnsResourceId(t *testing.T) {
+	key := "/books/OL0M"
+
+	expected := "OL0M"
+	actual := helper.ExtractResourceId(key)
+
+	if actual != expected {
+		t.Fatalf("Actual resource identifier '%s' does not match expected resource identifier '%s'.", actual, expected)
+	}
+}
+
+func TestExtractResourceIdReturnsEmptyString(t *testing.T) {
+	actual := helper.ExtractResourceId("")
+
+	if actual != "" {
+		t.Fatalf("Actual resource identifier '%s' does not match expected empty resource identifier.", actual)
+	}
+}

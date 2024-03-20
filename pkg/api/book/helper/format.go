@@ -23,6 +23,9 @@ func ExtractISBN(slice []string) string {
 	return FormatISBN(slice[0])
 }
 
+// Extract an OL resource identifier from a resource reference key; e.g., "/books/OL...M" becomes "OL...M".
+//
+// Return: extracted resource identifier when an input string is provided, an empty string when one is not.
 func ExtractResourceId(key string) string {
 	pattern := regexp.MustCompile("OL[A-Z0-9]+[A-Z]")
 
