@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -167,20 +166,15 @@ func storeBook(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (in
 
 func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkResponse) (int, error) {
 	var imageId int
-	var description string
 
 	if len(olEdition.Images) > 0 {
 		imageId = olEdition.Images[0]
 	}
 
-	if reflect.TypeOf(olWork.Description) == reflect.TypeFor[string]() {
-		description = olWork.Description.(string)
-	}
-
 	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
 		"title":             olEdition.Title,
 		"subtitle":          olEdition.Subtitle,
-		"description":       description,
+		"description":       olWork.Description,
 		"publish_date":      olEdition.PublishDate,
 		"pages":             olEdition.Pages,
 		"isbn10":            helper.ExtractISBN(olEdition.ISBN10),
