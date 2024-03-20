@@ -10,6 +10,13 @@ import (
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 )
 
+type RelationshipSliceArgument struct {
+	SourceName          string
+	SourceArgument      int
+	DestinationName     string
+	DestinationArgument []int
+}
+
 func FetchRelationship[M interface{}](connection connection.PgxPool, table string, constraint string) (M, error) {
 	var zero M
 
@@ -81,4 +88,19 @@ func StoreRelationship(connection connection.PgxPool, table string, properties [
 	}
 
 	return nil
+}
+
+// Store a relationship slice in the provided table with the provided properties (column names) and relationship slice argument, which
+// describes the source name and argument, destination name, and destination slice.
+func StoreRelationshipSlice(connection connection.PgxPool, table string, properties []string, relationship RelationshipSliceArgument) {
+	for _, destinationArgument := range relationship.DestinationArgument {
+		err := StoreRelationship(connection, table, properties, pgx.NamedArgs{
+			relationship.SourceName:      relationship.SourceArgument,
+			relationship.DestinationName: destinationArgument,
+		})
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to store relationship between '%s' '%d' and '%s' '%d': %v\n", relationship.SourceName, relationship.SourceArgument, relationship.DestinationName, destinationArgument, err)
+		}
+	}
 }
