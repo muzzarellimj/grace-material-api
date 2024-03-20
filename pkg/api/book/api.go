@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
@@ -49,7 +48,7 @@ func HandleGetBook(context *gin.Context) {
 func HandlePostBook(context *gin.Context) {
 	errorResponseMessage := "Unable to fetch book metadata and map to supported data structure."
 
-	id := strings.ReplaceAll(context.Query("id"), "-", "")
+	id := helper.FormatISBN(context.Query("id"))
 
 	if id == "" {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
