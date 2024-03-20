@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 	"github.com/muzzarellimj/grace-material-api/pkg/database"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
@@ -166,18 +167,10 @@ func storeBook(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (in
 
 func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkResponse) (int, error) {
 	var imageId int
-	var description, isbn10, isbn13 string
+	var description string
 
 	if len(olEdition.Images) > 0 {
 		imageId = olEdition.Images[0]
-	}
-
-	if len(olEdition.ISBN10) > 0 {
-		isbn10 = olEdition.ISBN10[0]
-	}
-
-	if len(olEdition.ISBN13) > 0 {
-		isbn13 = olEdition.ISBN13[0]
 	}
 
 	if reflect.TypeOf(olWork.Description) == reflect.TypeFor[string]() {
@@ -190,8 +183,8 @@ func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkR
 		"description":       description,
 		"publish_date":      olEdition.PublishDate,
 		"pages":             olEdition.Pages,
-		"isbn10":            isbn10,
-		"isbn13":            isbn13,
+		"isbn10":            helper.ExtractISBN(olEdition.ISBN10),
+		"isbn13":            helper.ExtractISBN(olEdition.ISBN13),
 		"image":             fmt.Sprint(imageId),
 		"edition_reference": olEdition.ID,
 		"work_reference":    olWork.ID,
