@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 )
 
@@ -79,7 +80,7 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	olBook, err := api.OLGetEdition(id)
+	edition, err := api.OLGetEdition(id)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -90,7 +91,27 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	insertedBookId, err := storeBook(olBook)
+	if len(edition.Works) == 0 {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	work, err := api.OLGetWork(helper.ExtractResourceId(edition.Works[0].ID))
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	insertedBookId, err := storeBook(edition, work)
 
 	if err != nil || insertedBookId == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{

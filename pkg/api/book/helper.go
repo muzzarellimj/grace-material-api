@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -145,16 +144,8 @@ func mapBook(bookFragment model.BookFragment, authorFragmentSlice []model.BookAu
 	}
 }
 
-func storeBook(olEdition tmodel.OLEditionResponse) (int, error) {
-	olWork, err := fetchOLWork(olEdition.Works)
-
-	if olWork.ID == "" || err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch work related to '%s': %v\n", olEdition.ID, err)
-
-		return 0, err
-	}
-
-	bookId, err := storeBookFragment(olEdition, olWork)
+func storeBook(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (int, error) {
+	bookId, err := storeBookFragment(edition, work)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to store book fragment: %v\n", err)
@@ -162,39 +153,15 @@ func storeBook(olEdition tmodel.OLEditionResponse) (int, error) {
 		return 0, err
 	}
 
-	authorIdSlice := storeAuthorFragments(olEdition.Authors)
-	publisherIdSlice := storePublisherFragments(olEdition.Publishers)
-	topicIdSlice := storeTopicFragments(olWork.Subjects)
+	authorIdSlice := storeAuthorFragments(edition.Authors)
+	publisherIdSlice := storePublisherFragments(edition.Publishers)
+	topicIdSlice := storeTopicFragments(work.Subjects)
 
 	storeBookAuthorRelationships(bookId, authorIdSlice)
 	storeBookPublisherRelationships(bookId, publisherIdSlice)
 	storeBookTopicRelationships(bookId, topicIdSlice)
 
 	return bookId, nil
-}
-
-func fetchOLWork(references []tmodel.OLResourceReference) (tmodel.OLWorkResponse, error) {
-	var zero tmodel.OLWorkResponse
-
-	if len(references) == 0 {
-		err := errors.New("unable to fetch related work with empty work reference slice")
-
-		fmt.Fprintf(os.Stderr, "Unable to fetch related work with empty reference slice: %v\n", err)
-
-		return zero, err
-	}
-
-	id := strings.ReplaceAll(references[0].ID, "/works/", "")
-
-	olWork, err := api.OLGetWork(id)
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to fetch work '%s': %v\n", id, err)
-
-		return zero, err
-	}
-
-	return olWork, nil
 }
 
 func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkResponse) (int, error) {
