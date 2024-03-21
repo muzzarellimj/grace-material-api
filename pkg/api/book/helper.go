@@ -182,24 +182,18 @@ func storeBook(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (in
 	return bookId, nil
 }
 
-func storeBookFragment(olEdition tmodel.OLEditionResponse, olWork tmodel.OLWorkResponse) (int, error) {
-	var imageId int
-
-	if len(olEdition.Images) > 0 {
-		imageId = olEdition.Images[0]
-	}
-
+func storeBookFragment(edition tmodel.OLEditionResponse, work tmodel.OLWorkResponse) (int, error) {
 	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
-		"title":             olEdition.Title,
-		"subtitle":          olEdition.Subtitle,
-		"description":       olWork.Description,
-		"publish_date":      olEdition.PublishDate,
-		"pages":             olEdition.Pages,
-		"isbn10":            helper.ExtractISBN(olEdition.ISBN10),
-		"isbn13":            helper.ExtractISBN(olEdition.ISBN13),
-		"image":             fmt.Sprint(imageId),
-		"edition_reference": olEdition.ID,
-		"work_reference":    olWork.ID,
+		"title":             edition.Title,
+		"subtitle":          edition.Subtitle,
+		"description":       work.Description,
+		"publish_date":      edition.PublishDate,
+		"pages":             edition.Pages,
+		"isbn10":            helper.ExtractISBN(edition.ISBN10),
+		"isbn13":            helper.ExtractISBN(edition.ISBN13),
+		"image":             fmt.Sprintf("https://covers.openlibrary.org/b/olid/%s-L.jpg", helper.ExtractResourceId(edition.ID)),
+		"edition_reference": helper.ExtractResourceId(edition.ID),
+		"work_reference":    helper.ExtractResourceId(work.ID),
 	})
 
 	if err != nil {
