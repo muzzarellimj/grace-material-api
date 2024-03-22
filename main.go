@@ -21,10 +21,10 @@ func main() {
 
 	router.GET("/api/book", bookApi.HandleGetBook)
 	router.POST("/api/book", bookApi.HandlePostBook)
+	router.GET("api/book/search", bookApi.HandleGetBookSearch)
 
 	router.GET("/api/movie", movieApi.HandleGetMovie)
 	router.POST("/api/movie", movieApi.HandlePostMovie)
-
 	router.GET("/api/movie/search", movieApi.HandleGetMovieSearch)
 
 	router.Run("localhost:8080")

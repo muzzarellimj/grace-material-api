@@ -126,3 +126,38 @@ func HandlePostBook(context *gin.Context) {
 		"message": fmt.Sprintf("Book stored with numeric identifier '%d'.", storedBookId),
 	})
 }
+
+func HandleGetBookSearch(context *gin.Context) {
+	isbn := helper.FormatISBN(context.Query("isbn"))
+
+	if isbn == "" {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'isbn'.", context.Query("isbn")),
+		})
+
+		return
+	}
+
+	edition, err := api.OLGetEdition(isbn)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	if edition.ID == "" {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data":   edition,
+	})
+}
