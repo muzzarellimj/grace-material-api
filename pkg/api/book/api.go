@@ -110,9 +110,9 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	insertedBookId, err := storeBook(edition, work)
+	storedBookId, err := helper.ProcessBook(edition, work)
 
-	if err != nil || insertedBookId == 0 {
+	if err != nil || storedBookId == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": errorResponseMessage,
@@ -123,6 +123,6 @@ func HandlePostBook(context *gin.Context) {
 
 	context.IndentedJSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
-		"message": fmt.Sprintf("Book inserted with numeric identifier '%d'.", insertedBookId),
+		"message": fmt.Sprintf("Book stored with numeric identifier '%d'.", storedBookId),
 	})
 }
