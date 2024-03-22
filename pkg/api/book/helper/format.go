@@ -23,6 +23,29 @@ func ExtractISBN(slice []string) string {
 	return FormatISBN(slice[0])
 }
 
+// Extract the first, middle, and last name components from a full name.
+//
+// Return: first, middle, and last name, each is empty as necessary.
+func ExtractName(name string) (string, string, string) {
+	nameSlice := strings.Split(name, " ")
+
+	switch length := len(nameSlice); length {
+
+	case 1:
+		return nameSlice[0], "", ""
+
+	case 2:
+		return nameSlice[0], "", nameSlice[1]
+
+	case 3:
+		return nameSlice[0], nameSlice[1], nameSlice[2]
+
+	default:
+		return name, "", ""
+
+	}
+}
+
 // Extract an OL resource identifier from a resource reference key; e.g., "/books/OL...M" becomes "OL...M".
 //
 // Return: extracted resource identifier when an input string is provided, an empty string when one is not.
