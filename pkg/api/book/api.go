@@ -22,7 +22,7 @@ func HandleGetBook(context *gin.Context) {
 		return
 	}
 
-	book, err := fetchBook(fmt.Sprintf("id=%d", id))
+	book, err := helper.FetchBook(fmt.Sprintf("id=%d", id))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -59,7 +59,7 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	existingBook, err := fetchBook(fmt.Sprintf("isbn13='%s' OR edition_reference='%s'", id, id))
+	existingBook, err := helper.FetchBook(fmt.Sprintf("isbn13='%s' OR edition_reference='%s'", id, id))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{

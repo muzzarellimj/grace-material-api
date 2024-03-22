@@ -1,4 +1,4 @@
-package api
+package helper
 
 import (
 	"fmt"
@@ -10,10 +10,8 @@ import (
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/book"
 )
 
-func fetchBook(constraint string) (model.Book, error) {
-	var connection connection.PgxPool = connection.Book
-
-	bookFragment, err := service.FetchFragment[model.BookFragment](connection, database.TableBookFragments, constraint)
+func FetchBook(constraint string) (model.Book, error) {
+	bookFragment, err := service.FetchFragment[model.BookFragment](connection.Book, database.TableBookFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch book with constraint '%s': %v\n", constraint, err)
@@ -21,19 +19,19 @@ func fetchBook(constraint string) (model.Book, error) {
 		return model.Book{}, err
 	}
 
-	authorFragmentSlice, err := fetchAuthorSlice(bookFragment)
+	authorFragmentSlice, err := fetchAuthorFragmentSlice(bookFragment)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch authors related to book '%d': %v\n", bookFragment.ID, err)
 	}
 
-	publisherFragmentSlice, err := fetchPublisherSlice(bookFragment)
+	publisherFragmentSlice, err := fetchPublisherFragmentSlice(bookFragment)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch publishers related to book '%d': %v\n", bookFragment.ID, err)
 	}
 
-	topicFragmentSlice, err := fetchTopicSlice(bookFragment)
+	topicFragmentSlice, err := fetchTopicFragmentSlice(bookFragment)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch topics related to book '%d': %v\n", bookFragment.ID, err)
@@ -42,7 +40,7 @@ func fetchBook(constraint string) (model.Book, error) {
 	return mapBook(bookFragment, authorFragmentSlice, publisherFragmentSlice, topicFragmentSlice), nil
 }
 
-func fetchAuthorSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragment, error) {
+func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragment, error) {
 	bookAuthorRelationshipSlice, err := service.FetchRelationshipSlice[model.BookAuthorRelationship](connection.Book, database.TableBookAuthorRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
@@ -68,7 +66,7 @@ func fetchAuthorSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragme
 	return authorFragmentSlice, nil
 }
 
-func fetchPublisherSlice(bookFragment model.BookFragment) ([]model.BookPublisherFragment, error) {
+func fetchPublisherFragmentSlice(bookFragment model.BookFragment) ([]model.BookPublisherFragment, error) {
 	bookPublisherRelationshipSlice, err := service.FetchRelationshipSlice[model.BookPublisherRelationship](connection.Book, database.TableBookPublisherRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
@@ -94,7 +92,7 @@ func fetchPublisherSlice(bookFragment model.BookFragment) ([]model.BookPublisher
 	return publisherFragmentSlice, nil
 }
 
-func fetchTopicSlice(bookFragment model.BookFragment) ([]model.BookTopicFragment, error) {
+func fetchTopicFragmentSlice(bookFragment model.BookFragment) ([]model.BookTopicFragment, error) {
 	bookTopicRelationshipSlice, err := service.FetchRelationshipSlice[model.BookTopicRelationship](connection.Book, database.TableBookTopicRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
