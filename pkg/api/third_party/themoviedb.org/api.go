@@ -87,8 +87,6 @@ func TMDBSearchMovie(title string) (model.TMDBMovieSearchResponse, error) {
 
 	var searchResult model.TMDBMovieSearchResponse
 
-	fmt.Println(request.URL.String())
-
 	err = json.NewDecoder(response.Body).Decode(&searchResult)
 
 	if err != nil {

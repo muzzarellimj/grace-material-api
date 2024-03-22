@@ -22,8 +22,6 @@ func TTVAuthenticateRequest() (string, error) {
 		"grant_type":    "client_credentials",
 	})
 
-	fmt.Println(path)
-
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create request path to '%s%s': %v\n", base, endpointAuthentication, err)
 
@@ -48,8 +46,6 @@ func TTVAuthenticateRequest() (string, error) {
 
 	var authentication model.TTVAuthenticationResponse
 
-	fmt.Println(response.StatusCode)
-
 	err = json.NewDecoder(response.Body).Decode(&authentication)
 
 	if err != nil {
@@ -57,8 +53,6 @@ func TTVAuthenticateRequest() (string, error) {
 
 		return "", err
 	}
-
-	fmt.Println(authentication)
 
 	if authentication.AccessToken == "" || authentication.TokenType != "bearer" {
 		fmt.Fprintf(os.Stderr, "Unable to parse expected properties from authentication response model: %v\n", err)
