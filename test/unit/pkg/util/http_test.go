@@ -1,6 +1,7 @@
 package util_test
 
 import (
+	"io"
 	"net/http"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestCreateRequestPathReturnsSimplePath(t *testing.T) {
 func TestCreateRequestPathReturnsRouteArgPath(t *testing.T) {
 	expected := "https://api.grace.com/endpoint/1"
 
-	path, err := util.CreateRequestPath("https://api.grace.com", "/endpoint/", "1", make(map[string]string))
+	path, err := util.CreateRequestPath("https://api.grace.com", "/endpoint", "1", make(map[string]string))
 
 	if err != nil {
 		t.Fatalf("Unable to create request path: %v\n", err)
@@ -36,9 +37,9 @@ func TestCreateRequestPathReturnsRouteArgPath(t *testing.T) {
 }
 
 func TestCreateRequestPathReturnsQueryArgPath(t *testing.T) {
-	expected := "https://api.grace.com/endpoint/?id=1&"
+	expected := "https://api.grace.com/endpoint?id=1"
 
-	path, err := util.CreateRequestPath("https://api.grace.com", "/endpoint/", "", map[string]string{"id": "1"})
+	path, err := util.CreateRequestPath("https://api.grace.com", "/endpoint", "", map[string]string{"id": "1"})
 
 	if err != nil {
 		t.Fatalf("Unable to create request path: %v\n", err)
@@ -65,8 +66,8 @@ func TestCreateRequestReturnsSimpleRequest(t *testing.T) {
 	expectedMethod := "GET"
 	expectedPath := "https://api.grace.com/endpoint/1"
 
-	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint/", "1", make(map[string]string))
-	request, err := util.CreateRequest(http.MethodGet, path, make(map[string]string))
+	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint", "1", make(map[string]string))
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, make(map[string]string))
 
 	if err != nil {
 		t.Fatalf("Unable to create request: %v\n", err)
@@ -81,13 +82,39 @@ func TestCreateRequestReturnsSimpleRequest(t *testing.T) {
 	}
 }
 
+func TestCreateRequestReturnsBodyRequest(t *testing.T) {
+	expectedMethod := "POST"
+	expectedBody := "fields *; where id = 1;"
+
+	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint", "", make(map[string]string))
+	request, err := util.CreateRequest(http.MethodPost, path, []byte(`fields *; where id = 1;`), make(map[string]string))
+
+	if err != nil {
+		t.Fatalf("Unable to create request: %v\n", err)
+	}
+
+	if request.Method != expectedMethod {
+		t.Fatalf("Actual request method '%s' does not match expected request method '%s': %v\n", request.Method, expectedMethod, err)
+	}
+
+	body, err := io.ReadAll(request.Body)
+
+	if err != nil {
+		t.Fatalf("Unable to read request body: %v\n", err)
+	}
+
+	if string(body) != expectedBody {
+		t.Fatalf("Actual request body '%s' does not match expected request body '%s': %v\n", string(body), expectedBody, err)
+	}
+}
+
 func TestCreateRequestReturnsAuthorizedRequest(t *testing.T) {
 	expectedMethod := "POST"
-	expectedPath := "https://api.grace.com/endpoint/?id=1&"
+	expectedPath := "https://api.grace.com/endpoint?id=1"
 	expectedAuthorization := "Bearer GraceTestToken"
 
-	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint/", "", map[string]string{"id": "1"})
-	request, err := util.CreateRequest(http.MethodPost, path, map[string]string{"Authorization": "Bearer GraceTestToken"})
+	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint", "", map[string]string{"id": "1"})
+	request, err := util.CreateRequest(http.MethodPost, path, []byte{}, map[string]string{"Authorization": "Bearer GraceTestToken"})
 
 	if err != nil {
 		t.Fatalf("Unable to create request: %v\n", err)
@@ -107,8 +134,8 @@ func TestCreateRequestReturnsAuthorizedRequest(t *testing.T) {
 }
 
 func TestCreateRequestHandlesEmptyMethodArg(t *testing.T) {
-	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint/", "", make(map[string]string))
-	request, err := util.CreateRequest("", path, make(map[string]string))
+	path, _ := util.CreateRequestPath("https://api.grace.com", "/endpoint", "", make(map[string]string))
+	request, err := util.CreateRequest("", path, []byte{}, make(map[string]string))
 
 	if err == nil {
 		t.Fatal("Unable to catch error with empty 'method' argument.\n")
@@ -120,7 +147,7 @@ func TestCreateRequestHandlesEmptyMethodArg(t *testing.T) {
 }
 
 func TestCreateRequestHandlesEmptyPathArg(t *testing.T) {
-	request, err := util.CreateRequest(http.MethodGet, "", make(map[string]string))
+	request, err := util.CreateRequest(http.MethodGet, "", []byte{}, make(map[string]string))
 
 	if err == nil {
 		t.Fatal("Unable to catch error with empty 'path' argument.\n")
@@ -133,7 +160,7 @@ func TestCreateRequestHandlesEmptyPathArg(t *testing.T) {
 
 func TestExecuteRequestReturnsStatusOk(t *testing.T) {
 	path, _ := util.CreateRequestPath("https://google.com", "", "", make(map[string]string))
-	request, _ := util.CreateRequest(http.MethodGet, path, make(map[string]string))
+	request, _ := util.CreateRequest(http.MethodGet, path, []byte{}, make(map[string]string))
 	response, err := util.ExecuteRequest(request)
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -61,10 +62,10 @@ func CreateRequestPath(base string, route string, routeParam string, queryParams
 	return path, nil
 }
 
-// Create an HTTP request with a request method, request path, and header map.
+// Create an HTTP request with a request method, request path, request body, and header map.
 //
 // Return: built request and nil with success, nil and error without.
-func CreateRequest(method string, path string, headers map[string]string) (*http.Request, error) {
+func CreateRequest(method string, path string, body []byte, headers map[string]string) (*http.Request, error) {
 	if method == "" || path == "" {
 		err := errors.New("invalid 'method' or 'path' argument provided")
 
@@ -73,7 +74,9 @@ func CreateRequest(method string, path string, headers map[string]string) (*http
 		return nil, err
 	}
 
-	request, err := http.NewRequest(method, path, nil)
+	reader := bytes.NewReader(body)
+
+	request, err := http.NewRequest(method, path, reader)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create HTTP request: %v\n", err)
