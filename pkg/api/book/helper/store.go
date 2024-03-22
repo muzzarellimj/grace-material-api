@@ -14,8 +14,8 @@ import (
 	"github.com/muzzarellimj/grace-material-api/pkg/util"
 )
 
-func ProcessBook(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse) (int, error) {
-	bookId, err := StoreBookFragment(edition, work)
+func ProcessBookStorage(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse) (int, error) {
+	bookId, err := storeBookFragment(edition, work)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to store book '%s' fragment: %v\n", ExtractResourceId(edition.ID), err)
@@ -23,9 +23,9 @@ func ProcessBook(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse)
 		return 0, err
 	}
 
-	authorIdSlice := ProcessAuthorFragmentSlice(edition.Authors)
-	publisherIdSlice := ProcessPublisherFragmentSlice(edition.Publishers)
-	topicIdSlice := ProcessTopicFragmentSlice(work.Subjects)
+	authorIdSlice := processAuthorFragmentSliceStorage(edition.Authors)
+	publisherIdSlice := processPublisherFragmentSliceStorage(edition.Publishers)
+	topicIdSlice := processTopicFragmentSliceStorage(work.Subjects)
 
 	service.StoreRelationshipSlice(connection.Book, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, service.RelationshipSliceArgument{
 		SourceName:          "book",
@@ -51,7 +51,7 @@ func ProcessBook(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse)
 	return bookId, nil
 }
 
-func StoreBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse) (int, error) {
+func storeBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse) (int, error) {
 	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
 		"title":             edition.Title,
 		"subtitle":          edition.Subtitle,
@@ -74,7 +74,7 @@ func StoreBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkRes
 	return bookId, nil
 }
 
-func ProcessAuthorFragmentSlice(authors []OLModel.OLResourceReference) []int {
+func processAuthorFragmentSliceStorage(authors []OLModel.OLResourceReference) []int {
 	var authorIdSlice []int
 
 	for _, resource := range authors {
@@ -125,7 +125,7 @@ func ProcessAuthorFragmentSlice(authors []OLModel.OLResourceReference) []int {
 	return authorIdSlice
 }
 
-func ProcessPublisherFragmentSlice(publishers []string) []int {
+func processPublisherFragmentSliceStorage(publishers []string) []int {
 	var publisherIdSlice []int
 
 	for _, publisher := range publishers {
@@ -161,7 +161,7 @@ func ProcessPublisherFragmentSlice(publishers []string) []int {
 	return publisherIdSlice
 }
 
-func ProcessTopicFragmentSlice(topics []string) []int {
+func processTopicFragmentSliceStorage(topics []string) []int {
 	var topicIdSlice []int
 
 	for _, topic := range topics {

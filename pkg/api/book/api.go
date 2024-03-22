@@ -10,6 +10,8 @@ import (
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 )
 
+const errorResponseMessage string = "Unable to fetch book metadata and map to supported data structure."
+
 func HandleGetBook(context *gin.Context) {
 	id, err := strconv.Atoi(context.Query("id"))
 
@@ -27,7 +29,7 @@ func HandleGetBook(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": "Unable to fetch book metadata and map to a supported data structure.",
+			"message": errorResponseMessage,
 		})
 
 		return
@@ -46,8 +48,6 @@ func HandleGetBook(context *gin.Context) {
 }
 
 func HandlePostBook(context *gin.Context) {
-	errorResponseMessage := "Unable to fetch book metadata and map to supported data structure."
-
 	id := helper.FormatISBN(context.Query("id"))
 
 	if id == "" {
@@ -110,7 +110,7 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	storedBookId, err := helper.ProcessBook(edition, work)
+	storedBookId, err := helper.ProcessBookStorage(edition, work)
 
 	if err != nil || storedBookId == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
