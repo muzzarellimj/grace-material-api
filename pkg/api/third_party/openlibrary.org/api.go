@@ -40,7 +40,7 @@ func OLGetAuthor(id string) (model.OLAuthorResponse, error) {
 		return zero, err
 	}
 
-	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{})
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)
@@ -97,7 +97,7 @@ func OLGetEdition(id string) (model.OLEditionResponse, error) {
 		return zero, err
 	}
 
-	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{})
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)
@@ -155,7 +155,7 @@ func OLGetWork(id string) (model.OLWorkResponse, error) {
 		return zero, err
 	}
 
-	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{})
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)

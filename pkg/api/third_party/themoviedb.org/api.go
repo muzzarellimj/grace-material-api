@@ -28,7 +28,7 @@ func TMDBGetMovie(id int) (model.TMDBMovieDetailResponse, error) {
 		return model.TMDBMovieDetailResponse{}, err
 	}
 
-	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{"Authorization": fmt.Sprint("Bearer ", os.Getenv("TMDB_API_KEY"))})
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{"Authorization": fmt.Sprint("Bearer ", os.Getenv("TMDB_API_KEY"))})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)
@@ -69,7 +69,7 @@ func TMDBSearchMovie(title string) (model.TMDBMovieSearchResponse, error) {
 		return model.TMDBMovieSearchResponse{}, err
 	}
 
-	request, err := util.CreateRequest(http.MethodGet, path, map[string]string{"Authorization": fmt.Sprint("Bearer ", os.Getenv("TMDB_API_KEY"))})
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{"Authorization": fmt.Sprint("Bearer ", os.Getenv("TMDB_API_KEY"))})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)

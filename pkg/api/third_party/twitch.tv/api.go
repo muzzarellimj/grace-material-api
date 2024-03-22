@@ -28,7 +28,7 @@ func TTVAuthenticateRequest() (string, error) {
 		return "", err
 	}
 
-	request, err := util.CreateRequest(http.MethodPost, path, map[string]string{})
+	request, err := util.CreateRequest(http.MethodPost, path, []byte{}, map[string]string{})
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodPost, path, err)
