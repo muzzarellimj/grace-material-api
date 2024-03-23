@@ -1,20 +1,16 @@
 package model
 
 type IGDBGameResponse struct {
-	ID                        int    `json:"id"`
-	Title                     string `json:"name"`
-	Summary                   string `json:"summary"`
-	Storyline                 string `json:"storyline"`
-	FranchiseReferences       []int  `json:"franchises"`
-	GenreReferences           []int  `json:"genres"`
-	InvolvedCompanyReferences []int  `json:"involved_companies"`
-	PlatformReferences        []int  `json:"platforms"`
-	ReleaseDate               int    `json:"first_release_date"`
-	CoverReference            int    `json:"cover"`
-}
-
-type IGDBInvolvedCompanyResponse struct {
-	Company int `json:"company"`
+	ID                int                         `json:"id"`
+	Title             string                      `json:"name"`
+	Summary           string                      `json:"summary"`
+	Storyline         string                      `json:"storyline"`
+	Franchises        []IGDBNestedNamedResource   `json:"franchises"`
+	Genres            []IGDBNestedNamedResource   `json:"genres"`
+	InvolvedCompanies []IGDBNestedInvolvedCompany `json:"involved_companies"`
+	Platforms         []IGDBNestedNamedResource   `json:"platforms"`
+	ReleaseDate       int                         `json:"first_release_date"`
+	Cover             IGDBNestedCover             `json:"cover"`
 }
 
 type IGDBCompanyResponse struct {
@@ -23,12 +19,16 @@ type IGDBCompanyResponse struct {
 	Description string `json:"description"`
 }
 
-// Common wrapper struct for franchises, genres, and platforms.
-type IGDBNamedResourceResponse struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type IGDBNestedCover struct {
+	Hash string `json:"image_id"`
 }
 
-type IGDBCoverResponse struct {
-	Hash string `json:"image_id"`
+type IGDBNestedInvolvedCompany struct {
+	Company   int  `json:"company"`
+	Developer bool `json:"developer"`
+}
+
+type IGDBNestedNamedResource struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
