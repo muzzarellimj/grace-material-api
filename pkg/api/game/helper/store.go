@@ -96,8 +96,8 @@ func processFranchiseFragmentSlice(franchises []IGDBModel.IGDBNestedNamedResourc
 		}
 
 		franchiseId, err := service.StoreFragment(connection.Game, database.TableGameFranchiseFragments, database.PropertiesGameFranchiseFragments, pgx.NamedArgs{
-			"name":     resource.Name,
-			"resource": resource.ID,
+			"name":      resource.Name,
+			"reference": resource.ID,
 		})
 
 		if err != nil {
@@ -131,8 +131,8 @@ func processGenreFragmentSlice(genres []IGDBModel.IGDBNestedNamedResource) []int
 		}
 
 		genreId, err := service.StoreFragment(connection.Game, database.TableGameGenreFragments, database.PropertiesGameGenreFragments, pgx.NamedArgs{
-			"name":     resource.Name,
-			"resource": resource.ID,
+			"name":      resource.Name,
+			"reference": resource.ID,
 		})
 
 		if err != nil {
@@ -166,8 +166,8 @@ func processPlatformFragmentSlice(platforms []IGDBModel.IGDBNestedNamedResource)
 		}
 
 		platformId, err := service.StoreFragment(connection.Game, database.TableGamePlatformFragments, database.PropertiesGamePlatformFragments, pgx.NamedArgs{
-			"name":     resource.Name,
-			"resource": resource.ID,
+			"name":      resource.Name,
+			"reference": resource.ID,
 		})
 
 		if err != nil {
@@ -204,7 +204,7 @@ func processStudioFragmentSlice(companies []IGDBModel.IGDBNestedInvolvedCompany)
 			continue
 		}
 
-		studio, err := IGDBAPI.IGDBGetResource[IGDBModel.IGDBCompanyResponse](IGDBAPI.IGDBEndpointCompany, fmt.Sprintf("fields id,name,description; where id=%d", company.Company))
+		studio, err := IGDBAPI.IGDBGetResource[IGDBModel.IGDBCompanyResponse](IGDBAPI.IGDBEndpointCompany, fmt.Sprintf("fields id,name,description; where id=%d;", company.Company))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch company '%d' IGDB record: %v\n", company.Company, err)
