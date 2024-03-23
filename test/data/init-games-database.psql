@@ -25,7 +25,7 @@ CREATE TABLE games (
     title           VARCHAR (128)   NOT NULL,
     summary         VARCHAR (1024)  NOT NULL,
     storyline       VARCHAR (2048)  NOT NULL,
-    release_date    VARCHAR (24)    NOT NULL,
+    release_date    INT             NOT NULL,
     image           VARCHAR (256)   NOT NULL,
     reference       INT             NOT NULL,
 
@@ -103,7 +103,7 @@ INSERT INTO franchises (name, reference)
     VALUES  ('The Last of Us', 2675);
 
 INSERT INTO games (title, summary, storyline, release_date, image, reference)
-    VALUES  ('The Last of Us', 'A third person shooter/stealth/survival hybrid, in which twenty years after the outbreak of a parasitic fungus which takes over the neural functions of humans, Joel, a Texan with a tragic familial past, finds himself responsible with smuggling a fourteen year old girl named Ellie to a militia group called the Fireflies, while avoiding strict and deadly authorities, infected fungal hosts and other violent survivors.', 'Joel, a ruthless survivor with few moral lines left to cross, lives in one of the last remaining Quarantine Zones. These walled-off, oppressive cities are run by what’s left of the military. Despite the strict martial law, Joel operates in the black market of the city, smuggling contraband for the right price.\n\nJoel is asked by a dying friend to look after Ellie, a fourteen-year-old girl with courage beyond her years. What starts out as a simple job to deliver Ellie to another Quarantine Zone, soon transforms into a profound journey that will forever change Joel and Ellie.\n\nAs they journey across a post-pandemic United States, Joel and Ellie will encounter different factions of survivors that have each found a unique way of dealing with the infected humans, the lack of supplies, and the threat of other survivors. As Joel and Ellie struggle to persevere, they must learn to trust each other and work together in order to survive the realities of this new world.', '2013-06-13', '', 1009);
+    VALUES  ('The Last of Us', 'A third person shooter/stealth/survival hybrid, in which twenty years after the outbreak of a parasitic fungus which takes over the neural functions of humans, Joel, a Texan with a tragic familial past, finds himself responsible with smuggling a fourteen year old girl named Ellie to a militia group called the Fireflies, while avoiding strict and deadly authorities, infected fungal hosts and other violent survivors.', 'Joel, a ruthless survivor with few moral lines left to cross, lives in one of the last remaining Quarantine Zones. These walled-off, oppressive cities are run by what’s left of the military. Despite the strict martial law, Joel operates in the black market of the city, smuggling contraband for the right price.\n\nJoel is asked by a dying friend to look after Ellie, a fourteen-year-old girl with courage beyond her years. What starts out as a simple job to deliver Ellie to another Quarantine Zone, soon transforms into a profound journey that will forever change Joel and Ellie.\n\nAs they journey across a post-pandemic United States, Joel and Ellie will encounter different factions of survivors that have each found a unique way of dealing with the infected humans, the lack of supplies, and the threat of other survivors. As Joel and Ellie struggle to persevere, they must learn to trust each other and work together in order to survive the realities of this new world.', 0, '', 1009);
 
 INSERT INTO genres (name, reference)
     VALUES  ('Shooter', 5),

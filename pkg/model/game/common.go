@@ -9,7 +9,7 @@ type Game struct {
 	Genres      []GameGenreFragment     `json:"genres"`
 	Platforms   []GamePlatformFragment  `json:"platforms"`
 	Studios     []GameStudioFragment    `json:"studios"`
-	ReleaseDate string                  `json:"release_date"`
+	ReleaseDate int                     `json:"release_date"`
 	Image       string                  `json:"image"`
 	Reference   int                     `json:"reference"`
 }

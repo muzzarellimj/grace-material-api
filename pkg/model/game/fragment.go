@@ -5,7 +5,7 @@ type GameFragment struct {
 	Title       string `json:"title"`
 	Summary     string `json:"summary"`
 	Storyline   string `json:"storyline"`
-	ReleaseDate string `json:"release_date"`
+	ReleaseDate int    `json:"release_date"`
 	Image       string `json:"image"`
 	Reference   int    `json:"reference"`
 }
