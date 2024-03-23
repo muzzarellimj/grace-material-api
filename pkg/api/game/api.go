@@ -116,3 +116,38 @@ func HandlePostGame(context *gin.Context) {
 		"message": fmt.Sprintf("Game stored with numeric identifier '%d'.", storedGameId),
 	})
 }
+
+func HandleGetGameSearch(context *gin.Context) {
+	query := context.Query("query")
+
+	if query == "" {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid search term '%s' provided in query parameter 'query'.", context.Query("query")),
+		})
+
+		return
+	}
+
+	results, err := IGDBAPI.IGDBGetResourceSlice[IGDBModel.IGDBGameSearchResponse](IGDBAPI.IGDBEndpointGame, fmt.Sprintf(`fields id,name,cover.*,first_release_date; search "%s"; where (status=0 | status=null) & category=0;`, query))
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorResponseMessage,
+		})
+
+		return
+	}
+
+	if len(results) > 0 {
+		context.IndentedJSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
+			"data":   results,
+		})
+
+		return
+	}
+
+	context.Status(http.StatusNoContent)
+}

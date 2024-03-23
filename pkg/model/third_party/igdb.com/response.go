@@ -13,6 +13,13 @@ type IGDBGameResponse struct {
 	Cover             IGDBNestedCover             `json:"cover"`
 }
 
+type IGDBGameSearchResponse struct {
+	ID          int             `json:"id"`
+	Title       string          `json:"name"`
+	ReleaseDate int             `json:"first_release_date"`
+	Cover       IGDBNestedCover `json:"cover"`
+}
+
 type IGDBCompanyResponse struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`

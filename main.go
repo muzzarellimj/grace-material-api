@@ -26,6 +26,7 @@ func main() {
 
 	router.GET("/api/game", gameApi.HandleGetGame)
 	router.POST("/api/game", gameApi.HandlePostGame)
+	router.GET("/api/game/search", gameApi.HandleGetGameSearch)
 
 	router.GET("/api/movie", movieApi.HandleGetMovie)
 	router.POST("/api/movie", movieApi.HandlePostMovie)
