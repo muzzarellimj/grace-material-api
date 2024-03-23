@@ -51,7 +51,7 @@ CREATE TABLE platforms (
 CREATE TABLE studios (
     id          INT             GENERATED ALWAYS AS IDENTITY,
     name        VARCHAR (128)   NOT NULL,
-    description VARCHAR (1024)  NOT NULL,
+    description VARCHAR (2048)  NOT NULL,
     reference   INT             NOT NULL,
 
     PRIMARY KEY (id)
