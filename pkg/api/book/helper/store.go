@@ -154,7 +154,7 @@ func processPublisherFragmentSliceStorage(publishers []string) []int {
 		}
 
 		if publisherId != 0 {
-			publisherIdSlice = append(publisherIdSlice, existingPublisherFragment.ID)
+			publisherIdSlice = append(publisherIdSlice, publisherId)
 		}
 	}
 
@@ -190,7 +190,7 @@ func processTopicFragmentSliceStorage(topics []string) []int {
 		}
 
 		if topicId != 0 {
-			topicIdSlice = append(topicIdSlice, existingTopicFragment.ID)
+			topicIdSlice = append(topicIdSlice, topicId)
 		}
 	}
 
