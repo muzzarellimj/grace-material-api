@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
+	model "github.com/muzzarellimj/grace-material-api/pkg/model/book"
 )
 
 const errorResponseMessage string = "Unable to fetch book metadata and map to supported data structure."
@@ -128,18 +129,18 @@ func HandlePostBook(context *gin.Context) {
 }
 
 func HandleGetBookSearch(context *gin.Context) {
-	isbn := helper.FormatISBN(context.Query("isbn"))
+	query := helper.FormatISBN(context.Query("query"))
 
-	if isbn == "" {
+	if query == "" {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'isbn'.", context.Query("isbn")),
+			"message": fmt.Sprintf("Invalid value '%s' provided in query parameter 'query'.", context.Query("query")),
 		})
 
 		return
 	}
 
-	edition, err := api.OLGetEdition(isbn)
+	edition, err := api.OLGetEdition(query)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -156,8 +157,16 @@ func HandleGetBookSearch(context *gin.Context) {
 		return
 	}
 
+	result := model.BookSearchResult{
+		ID:          helper.ExtractResourceId(edition.ID),
+		Title:       edition.Title,
+		PublishDate: edition.PublishDate,
+		ISBN10:      helper.ExtractISBN(edition.ISBN10),
+		ISBN13:      helper.ExtractISBN(edition.ISBN13),
+	}
+
 	context.IndentedJSON(http.StatusOK, gin.H{
 		"status": http.StatusOK,
-		"data":   edition,
+		"data":   result,
 	})
 }
