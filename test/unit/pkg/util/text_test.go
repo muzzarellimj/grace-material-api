@@ -6,6 +6,17 @@ import (
 	"github.com/muzzarellimj/grace-material-api/pkg/util"
 )
 
+func TestParseDateTimeReturnsTimestamp(t *testing.T) {
+	value := "November 10, 2022"
+
+	actual := util.ParseDateTime(value)
+	expected := int64(1668038400)
+
+	if actual != expected {
+		t.Fatalf("Actual timestamp '%d' does not match expected timestamp '%d'.", actual, expected)
+	}
+}
+
 func TestFormatPSQLStringReturnsSingleQuotes(t *testing.T) {
 	value := "Children's fiction"
 

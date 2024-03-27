@@ -1,6 +1,30 @@
 package util
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
+
+// Format a date-time string value with a supported layout (format) set to be replaced with a Unix timestamp.
+//
+// Return: parsed timestamp with sucess, 0 without.
+func ParseDateTime(value string) int64 {
+	var timestamp int64
+
+	layoutSlice := []string{"January 2, 2006", "2006-01-02", "2006/01/02", "01-02-2006", "01/02/2006"}
+
+	for _, layout := range layoutSlice {
+		time, err := time.Parse(layout, value)
+
+		if err != nil {
+			continue
+		}
+
+		timestamp = time.Unix()
+	}
+
+	return timestamp
+}
 
 // Format a string value to be execution-ready with PSQL queries by replacing single-quotes and double-quotes with
 // single-quote and double-quote pairs, respectively.
