@@ -7,7 +7,7 @@ type Movie struct {
 	Description         string                           `json:"description"`
 	Genres              []MovieGenreFragment             `json:"genres"`
 	ProductionCompanies []MovieProductionCompanyFragment `json:"production_companies"`
-	ReleaseDate         string                           `json:"release_date"`
+	ReleaseDate         int64                            `json:"release_date"`
 	Runtime             int                              `json:"runtime"`
 	Image               string                           `json:"image"`
 	Reference           int                              `json:"reference"`

@@ -5,11 +5,13 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/muzzarellimj/grace-material-api/pkg/api/movie/helper"
 	"github.com/muzzarellimj/grace-material-api/pkg/database"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
 	"github.com/muzzarellimj/grace-material-api/pkg/database/service"
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/movie"
 	tmodel "github.com/muzzarellimj/grace-material-api/pkg/model/third_party/themoviedb.org"
+	"github.com/muzzarellimj/grace-material-api/pkg/util"
 )
 
 func fetchMovie(constraint string) (model.Movie, string, error) {
@@ -102,9 +104,9 @@ func storeMovieFragment(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
 		"title":        tmdbMovie.Title,
 		"tagline":      tmdbMovie.Tagline,
 		"description":  tmdbMovie.Overview,
-		"release_date": tmdbMovie.ReleaseDate,
+		"release_date": util.ParseDateTime(tmdbMovie.ReleaseDate),
 		"runtime":      tmdbMovie.Runtime,
-		"image":        tmdbMovie.Image,
+		"image":        helper.FormatImagePath(tmdbMovie.Image),
 		"reference":    tmdbMovie.ID,
 	})
 
@@ -174,7 +176,7 @@ func storeProductionCompanyFragments(productionCompanies []tmodel.TMDBProduction
 
 		storedProductionCompanyId, err := service.StoreFragment(connection.Movie, database.TableMovieProductionCompanyFragments, database.PropertiesMovieProductionCompanyFragments, pgx.NamedArgs{
 			"name":      productionCompany.Name,
-			"image":     productionCompany.Image,
+			"image":     helper.FormatImagePath(productionCompany.Image),
 			"reference": productionCompany.ID,
 		})
 

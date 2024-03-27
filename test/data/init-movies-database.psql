@@ -21,7 +21,7 @@ CREATE TABLE movies (
     title           VARCHAR (128)   NOT NULL,
     tagline         VARCHAR (512)   NOT NULL,
     description     VARCHAR (1028)  NOT NULL,
-    release_date    VARCHAR (24)    NOT NULL,
+    release_date    BIGINT          NOT NULL,
     runtime         SMALLINT        NOT NULL,
     image           VARCHAR (256)   NOT NULL,
     reference       INT             NOT NULL,
@@ -67,7 +67,7 @@ INSERT INTO genres (name, reference)
             ('Fantasy', 14);
 
 INSERT INTO movies (title, description, tagline, release_date, runtime, image, reference)
-    VALUES  ('Encanto', 'There''s a little magic in all of us...almost all of us.', 'The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family—every child except one, Mirabel. But when she discovers that the magic surrounding the Encanto is in danger, Mirabel decides that she, the only ordinary Madrigal, might just be her exceptional family''s last hope.', '2021-10-13', 102, '', 568124);
+    VALUES  ('Encanto', 'There''s a little magic in all of us...almost all of us.', 'The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family—every child except one, Mirabel. But when she discovers that the magic surrounding the Encanto is in danger, Mirabel decides that she, the only ordinary Madrigal, might just be her exceptional family''s last hope.', 0, 102, '', 568124);
 
 INSERT INTO production_companies (name, image, reference)
     VALUES  ('Walt Disney Animation Studios', '', 6125),

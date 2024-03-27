@@ -5,7 +5,7 @@ type MovieFragment struct {
 	Title       string `json:"title"`
 	Tagline     string `json:"tagline"`
 	Description string `json:"description"`
-	ReleaseDate string `json:"release_date"`
+	ReleaseDate int64  `json:"release_date"`
 	Runtime     int    `json:"runtime"`
 	Image       string `json:"image"`
 	Reference   int    `json:"reference"`

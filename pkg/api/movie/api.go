@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/muzzarellimj/grace-material-api/pkg/api/movie/helper"
 	tapi "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/themoviedb.org"
 )
 
@@ -111,18 +112,18 @@ func HandlePostMovie(context *gin.Context) {
 }
 
 func HandleGetMovieSearch(context *gin.Context) {
-	title := context.Query("title")
+	query := context.Query("query")
 
-	if title == "" {
+	if query == "" {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material title '%s' provided in query parameter 'title'.", title),
+			"message": fmt.Sprintf("Invalid search term '%s' provided in query parameter 'query'.", context.Query("query")),
 		})
 
 		return
 	}
 
-	results, err := tapi.TMDBSearchMovie(title)
+	results, err := tapi.TMDBSearchMovie(query)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -133,14 +134,16 @@ func HandleGetMovieSearch(context *gin.Context) {
 		return
 	}
 
-	if len(results.Results) == 0 {
-		context.Status(http.StatusNoContent)
+	if len(results.Results) > 0 {
+		mappedResults := helper.MapSearchResultSlice(results.Results)
+
+		context.IndentedJSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
+			"data":   mappedResults,
+		})
 
 		return
 	}
 
-	context.IndentedJSON(http.StatusOK, gin.H{
-		"status": http.StatusOK,
-		"data":   results,
-	})
+	context.Status(http.StatusNoContent)
 }
