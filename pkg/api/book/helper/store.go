@@ -56,7 +56,7 @@ func storeBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkRes
 		"title":             edition.Title,
 		"subtitle":          edition.Subtitle,
 		"description":       work.Description,
-		"publish_date":      edition.PublishDate,
+		"publish_date":      util.ParseDateTime(edition.PublishDate),
 		"pages":             edition.Pages,
 		"isbn10":            ExtractISBN(edition.ISBN10),
 		"isbn13":            ExtractISBN(edition.ISBN13),

@@ -8,7 +8,7 @@ type Book struct {
 	Authors          []BookAuthorFragment    `json:"authors"`
 	Publishers       []BookPublisherFragment `json:"publishers"`
 	Topics           []BookTopicFragment     `json:"topics"`
-	PublishDate      string                  `json:"publish_date"`
+	PublishDate      int64                   `json:"publish_date"`
 	Pages            int                     `json:"pages"`
 	ISBN10           string                  `json:"isbn10"`
 	ISBN13           string                  `json:"isbn13"`

@@ -5,7 +5,7 @@ type BookFragment struct {
 	Title            string `json:"title"`
 	Subtitle         string `json:"subtitle"`
 	Description      string `json:"description"`
-	PublishDate      string `json:"publish_date"`
+	PublishDate      int64  `json:"publish_date"`
 	Pages            int    `json:"pages"`
 	ISBN10           string `json:"isbn10"`
 	ISBN13           string `json:"isbn13"`

@@ -9,6 +9,7 @@ import (
 	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
 	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
 	model "github.com/muzzarellimj/grace-material-api/pkg/model/book"
+	"github.com/muzzarellimj/grace-material-api/pkg/util"
 )
 
 const errorResponseMessage string = "Unable to fetch book metadata and map to supported data structure."
@@ -160,7 +161,7 @@ func HandleGetBookSearch(context *gin.Context) {
 	result := model.BookSearchResult{
 		ID:          helper.ExtractResourceId(edition.ID),
 		Title:       edition.Title,
-		PublishDate: edition.PublishDate,
+		PublishDate: util.ParseDateTime(edition.PublishDate),
 		ISBN10:      helper.ExtractISBN(edition.ISBN10),
 		ISBN13:      helper.ExtractISBN(edition.ISBN13),
 	}
