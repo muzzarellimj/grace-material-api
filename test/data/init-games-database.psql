@@ -25,7 +25,7 @@ CREATE TABLE games (
     title           VARCHAR (128)   NOT NULL,
     summary         VARCHAR (1024)  NOT NULL,
     storyline       VARCHAR (2048)  NOT NULL,
-    release_date    INT             NOT NULL,
+    release_date    BIGINT          NOT NULL,
     image           VARCHAR (256)   NOT NULL,
     reference       INT             NOT NULL,
 

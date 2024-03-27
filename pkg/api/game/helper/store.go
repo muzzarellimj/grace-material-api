@@ -64,7 +64,7 @@ func storeGameFragment(game IGDBModel.IGDBGameResponse) (int, error) {
 		"summary":      game.Summary,
 		"storyline":    game.Storyline,
 		"release_date": game.ReleaseDate,
-		"image":        fmt.Sprintf("https://images.igdb.com/igdb/image/upload/t_%s/%s.jpg", "cover_big", game.Cover.Hash),
+		"image":        FormatImagePath(game.Cover.Hash),
 		"reference":    game.ID,
 	})
 

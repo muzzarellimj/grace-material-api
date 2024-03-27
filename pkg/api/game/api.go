@@ -141,9 +141,11 @@ func HandleGetGameSearch(context *gin.Context) {
 	}
 
 	if len(results) > 0 {
+		mappedResults := helper.MapSearchResultSlice(results)
+
 		context.IndentedJSON(http.StatusOK, gin.H{
 			"status": http.StatusOK,
-			"data":   results,
+			"data":   mappedResults,
 		})
 
 		return
