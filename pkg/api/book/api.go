@@ -158,16 +158,18 @@ func HandleGetBookSearch(context *gin.Context) {
 		return
 	}
 
-	result := model.BookSearchResult{
-		ID:          helper.ExtractResourceId(edition.ID),
-		Title:       edition.Title,
-		PublishDate: util.ParseDateTime(edition.PublishDate),
-		ISBN10:      helper.ExtractISBN(edition.ISBN10),
-		ISBN13:      helper.ExtractISBN(edition.ISBN13),
+	results := []model.BookSearchResult{
+		{
+			ID:          helper.ExtractResourceId(edition.ID),
+			Title:       edition.Title,
+			PublishDate: util.ParseDateTime(edition.PublishDate),
+			ISBN10:      helper.ExtractISBN(edition.ISBN10),
+			ISBN13:      helper.ExtractISBN(edition.ISBN13),
+		},
 	}
 
 	context.IndentedJSON(http.StatusOK, gin.H{
 		"status": http.StatusOK,
-		"data":   result,
+		"data":   results,
 	})
 }
