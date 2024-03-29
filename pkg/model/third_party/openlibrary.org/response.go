@@ -23,10 +23,10 @@ type OLEditionResponse struct {
 }
 
 type OLWorkResponse struct {
-	ID          string   `json:"key"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Subjects    []string `json:"subjects"`
+	ID          string      `json:"key"`
+	Title       string      `json:"title"`
+	Description interface{} `json:"description"`
+	Subjects    []string    `json:"subjects"`
 }
 
 type OLResourceReference struct {

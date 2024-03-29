@@ -55,7 +55,7 @@ func storeBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkRes
 	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
 		"title":             edition.Title,
 		"subtitle":          edition.Subtitle,
-		"description":       work.Description,
+		"description":       ExtractDescription(work.Description),
 		"publish_date":      util.ParseDateTime(edition.PublishDate),
 		"pages":             edition.Pages,
 		"isbn10":            ExtractISBN(edition.ISBN10),
@@ -78,7 +78,7 @@ func processAuthorFragmentSliceStorage(authors []OLModel.OLResourceReference) []
 	var authorIdSlice []int
 
 	for _, resource := range authors {
-		existingAuthorFragment, err := service.FetchFragment[model.BookAuthorFragment](connection.Book, database.TableBookAuthorFragments, fmt.Sprintf("reference='%s'", resource.ID))
+		existingAuthorFragment, err := service.FetchFragment[model.BookAuthorFragment](connection.Book, database.TableBookAuthorFragments, fmt.Sprintf("reference='%s'", ExtractResourceId(resource.ID)))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing author '%s' fragment: %v\n", ExtractResourceId(resource.ID), err)
