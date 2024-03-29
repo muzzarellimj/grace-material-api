@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	bookApi "github.com/muzzarellimj/grace-material-api/pkg/api/book"
@@ -19,6 +20,8 @@ func main() {
 	defer connection.Disconnect()
 
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	router.GET("/api/book", bookApi.HandleGetBook)
 	router.POST("/api/book", bookApi.HandlePostBook)
