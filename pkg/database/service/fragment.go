@@ -77,7 +77,13 @@ func StoreFragment(connection connection.PgxPool, table string, properties []str
 		return 0, err
 	}
 
-	defer tx.Rollback(context.Background())
+	defer func() {
+		err = tx.Rollback(context.Background())
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to rollback fragment insertion transaction: %v\n", err)
+		}
+	}()
 
 	var id int
 

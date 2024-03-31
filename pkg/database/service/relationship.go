@@ -69,7 +69,13 @@ func StoreRelationship(connection connection.PgxPool, table string, properties [
 		return err
 	}
 
-	defer tx.Rollback(context.Background())
+	defer func() {
+		err = tx.Rollback(context.Background())
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to rollback relationship insertion transaction: %v\n", err)
+		}
+	}()
 
 	_, err = tx.Exec(context.Background(), statement, arguments)
 
