@@ -17,6 +17,7 @@ jobs:
             - uses: golangci/golangci-lint-action@v4
               with:
                   version: latest
+                  args: --disable-all --enable gosimple
 
     release:
         name: Release
