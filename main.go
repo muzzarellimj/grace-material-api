@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gin-contrib/cors"
@@ -13,14 +14,18 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to load .env configuration file: %v\n", err)
+		os.Exit(1)
+	}
 
 	connection.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
 
 	defer connection.Disconnect()
 
 	router := gin.Default()
-
 	router.Use(cors.Default())
 
 	router.GET("/api/book", bookApi.HandleGetBook)
@@ -35,5 +40,10 @@ func main() {
 	router.POST("/api/movie", movieApi.HandlePostMovie)
 	router.GET("/api/movie/search", movieApi.HandleGetMovieSearch)
 
-	router.Run("localhost:8080")
+	err = router.Run()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to start listening with router: %v\n", err)
+		os.Exit(1)
+	}
 }
