@@ -19,6 +19,7 @@ jobs:
                   skip-cache: true
 
     release:
+        needs: lint
         runs-on: ubuntu-latest
         permissions:
             contents: write
