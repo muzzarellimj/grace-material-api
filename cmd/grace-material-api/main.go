@@ -17,8 +17,7 @@ func main() {
 	err := godotenv.Load()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to load .env configuration file: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Unable to load .env configuration file; this relies on explicitly declared configuration values and may cause issues outside deployed environments: %v\n", err)
 	}
 
 	connection.Connect(os.Getenv("DATABASE_CONNECTION_USERNAME"), os.Getenv("DATABASE_CONNECTION_PASSWORD"), os.Getenv("DATABASE_CONNECTION_HOST"), os.Getenv("DATABASE_CONNECTION_PORT"))
