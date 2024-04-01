@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/openlibrary.org"
+	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
 )
 
 func TestOLGetAuthorReturnsOLAuthorResponse(t *testing.T) {

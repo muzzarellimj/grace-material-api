@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
-	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/igdb.com"
-	model "github.com/muzzarellimj/grace-material-api/pkg/model/third_party/igdb.com"
+	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/igdb.com"
+	model "github.com/muzzarellimj/grace-material-api/internal/model/third_party/igdb.com"
 )
 
 func TestIGDBGetResourceReturnsGame(t *testing.T) {

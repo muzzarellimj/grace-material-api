@@ -3,8 +3,8 @@ package database_test
 import (
 	"testing"
 
-	"github.com/muzzarellimj/grace-material-api/pkg/database"
-	model "github.com/muzzarellimj/grace-material-api/pkg/model/movie"
+	"github.com/muzzarellimj/grace-material-api/internal/database"
+	model "github.com/muzzarellimj/grace-material-api/internal/model/movie"
 	"github.com/pashagolub/pgxmock/v3"
 )
 

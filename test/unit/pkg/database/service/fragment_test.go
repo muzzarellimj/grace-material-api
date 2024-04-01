@@ -3,9 +3,9 @@ package service_test
 import (
 	"testing"
 
-	"github.com/muzzarellimj/grace-material-api/pkg/database"
-	"github.com/muzzarellimj/grace-material-api/pkg/database/service"
-	model "github.com/muzzarellimj/grace-material-api/pkg/model/movie"
+	"github.com/muzzarellimj/grace-material-api/internal/database"
+	"github.com/muzzarellimj/grace-material-api/internal/database/service"
+	model "github.com/muzzarellimj/grace-material-api/internal/model/movie"
 	"github.com/pashagolub/pgxmock/v3"
 )
 

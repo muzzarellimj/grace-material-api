@@ -1,4 +1,4 @@
-module muzzarellimj/grace-material-api
+module github.com/muzzarellimj/grace-material-api
 
 go 1.21.6
 
@@ -10,7 +10,6 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/joho/godotenv v1.5.1
-	github.com/muzzarellimj/grace-material-api v0.0.0-20240331180613-6d109a905f36
 	github.com/pashagolub/pgxmock/v3 v3.3.0
 )
 

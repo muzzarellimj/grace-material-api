@@ -3,7 +3,7 @@ package api_test
 import (
 	"testing"
 
-	api "github.com/muzzarellimj/grace-material-api/pkg/api/third_party/twitch.tv"
+	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/twitch.tv"
 )
 
 // Note: needs to be run with injected client_id and client_secret - otherwise will return 400.

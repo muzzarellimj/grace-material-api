@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/muzzarellimj/grace-material-api/pkg/util"
+	"github.com/muzzarellimj/grace-material-api/internal/util"
 )
 
 func TestCreateRequestPathReturnsSimplePath(t *testing.T) {

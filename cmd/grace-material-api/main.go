@@ -7,10 +7,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	bookApi "github.com/muzzarellimj/grace-material-api/pkg/api/book"
-	gameApi "github.com/muzzarellimj/grace-material-api/pkg/api/game"
-	movieApi "github.com/muzzarellimj/grace-material-api/pkg/api/movie"
-	"github.com/muzzarellimj/grace-material-api/pkg/database/connection"
+	bookApi "github.com/muzzarellimj/grace-material-api/internal/api/book"
+	gameApi "github.com/muzzarellimj/grace-material-api/internal/api/game"
+	movieApi "github.com/muzzarellimj/grace-material-api/internal/api/movie"
+	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 )
 
 func main() {

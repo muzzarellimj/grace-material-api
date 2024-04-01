@@ -3,7 +3,7 @@ package helper_test
 import (
 	"testing"
 
-	"github.com/muzzarellimj/grace-material-api/pkg/api/book/helper"
+	"github.com/muzzarellimj/grace-material-api/internal/api/book/helper"
 )
 
 func TestFormatISBNReturnsISBN10(t *testing.T) {

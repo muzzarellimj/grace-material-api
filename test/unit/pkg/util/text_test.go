@@ -3,7 +3,7 @@ package util_test
 import (
 	"testing"
 
-	"github.com/muzzarellimj/grace-material-api/pkg/util"
+	"github.com/muzzarellimj/grace-material-api/internal/util"
 )
 
 func TestParseDateTimeReturnsTimestamp(t *testing.T) {
