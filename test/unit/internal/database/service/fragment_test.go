@@ -37,7 +37,7 @@ func TestFetchFragmentSliceReturnsMany(t *testing.T) {
 
 	defer mock.Close()
 
-	mock.ExpectQuery("SELECT \\* FROM genres WHERE name='Action' OR name='Animation'").
+	mock.ExpectQuery("SELECT \\* FROM mgenres WHERE name='Action' OR name='Animation'").
 		WillReturnRows(pgxmock.
 			NewRows([]string{"id", "name", "reference"}).
 			AddRow(1, "Action", 0).
