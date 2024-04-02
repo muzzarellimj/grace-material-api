@@ -81,7 +81,7 @@ func StoreFragment(connection database.PgxPool, table string, properties []strin
 		err = tx.Rollback(context.Background())
 
 		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			fmt.Fprintf(os.Stderr, "Unable to rollback transaction: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Unable to rollback fragment insertion transaction: %v\n", err)
 		}
 	}()
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -72,7 +73,7 @@ func StoreRelationship(connection database.PgxPool, table string, properties []s
 	defer func() {
 		err = tx.Rollback(context.Background())
 
-		if err != nil {
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
 			fmt.Fprintf(os.Stderr, "Unable to rollback relationship insertion transaction: %v\n", err)
 		}
 	}()
