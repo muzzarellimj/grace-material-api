@@ -5,13 +5,12 @@ import (
 	"os"
 
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/game"
 )
 
 func FetchGame(constraint string) (model.Game, error) {
-	gameFragment, err := service.FetchFragment[model.GameFragment](connection.Game, database.TableGameFragments, constraint)
+	gameFragment, err := service.FetchFragment[model.GameFragment](database.Connection, database.TableGameFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch game with constraint '%s': %v\n", constraint, err)
@@ -47,7 +46,7 @@ func FetchGame(constraint string) (model.Game, error) {
 }
 
 func fetchFranchiseFragmentSlice(gameFragment model.GameFragment) ([]model.GameFranchiseFragment, error) {
-	gameFranchiseRelationshipSlice, err := service.FetchRelationshipSlice[model.GameFranchiseRelationship](connection.Game, database.TableGameFranchiseRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
+	gameFranchiseRelationshipSlice, err := service.FetchRelationshipSlice[model.GameFranchiseRelationship](database.Connection, database.TableGameFranchiseRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between game '%d' and franchises: %v\n", gameFragment.ID, err)
@@ -58,7 +57,7 @@ func fetchFranchiseFragmentSlice(gameFragment model.GameFragment) ([]model.GameF
 	var franchiseFragmentSlice []model.GameFranchiseFragment
 
 	for _, relationship := range gameFranchiseRelationshipSlice {
-		franchiseFragment, err := service.FetchFragment[model.GameFranchiseFragment](connection.Game, database.TableGameFranchiseFragments, fmt.Sprintf("id=%d", relationship.Franchise))
+		franchiseFragment, err := service.FetchFragment[model.GameFranchiseFragment](database.Connection, database.TableGameFranchiseFragments, fmt.Sprintf("id=%d", relationship.Franchise))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch franchise '%d': %v\n", relationship.Franchise, err)
@@ -73,7 +72,7 @@ func fetchFranchiseFragmentSlice(gameFragment model.GameFragment) ([]model.GameF
 }
 
 func fetchGenreFragmentSlice(gameFragment model.GameFragment) ([]model.GameGenreFragment, error) {
-	gameGenreRelationshipSlice, err := service.FetchRelationshipSlice[model.GameGenreRelationship](connection.Game, database.TableGameGenreRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
+	gameGenreRelationshipSlice, err := service.FetchRelationshipSlice[model.GameGenreRelationship](database.Connection, database.TableGameGenreRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between game '%d' and genres: %v\n", gameFragment.ID, err)
@@ -84,7 +83,7 @@ func fetchGenreFragmentSlice(gameFragment model.GameFragment) ([]model.GameGenre
 	var genreFragmentSlice []model.GameGenreFragment
 
 	for _, relationship := range gameGenreRelationshipSlice {
-		genreFragment, err := service.FetchFragment[model.GameGenreFragment](connection.Game, database.TableGameGenreFragments, fmt.Sprintf("id=%d", relationship.Genre))
+		genreFragment, err := service.FetchFragment[model.GameGenreFragment](database.Connection, database.TableGameGenreFragments, fmt.Sprintf("id=%d", relationship.Genre))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch genre '%d': %v\n", relationship.Genre, err)
@@ -99,7 +98,7 @@ func fetchGenreFragmentSlice(gameFragment model.GameFragment) ([]model.GameGenre
 }
 
 func fetchPlatformFragmentSlice(gameFragment model.GameFragment) ([]model.GamePlatformFragment, error) {
-	gamePlatformRelationshipSlice, err := service.FetchRelationshipSlice[model.GamePlatformRelationship](connection.Game, database.TableGamePlatformRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
+	gamePlatformRelationshipSlice, err := service.FetchRelationshipSlice[model.GamePlatformRelationship](database.Connection, database.TableGamePlatformRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between game '%d' and platforms: %v\n", gameFragment.ID, err)
@@ -110,7 +109,7 @@ func fetchPlatformFragmentSlice(gameFragment model.GameFragment) ([]model.GamePl
 	var platformFragmentSlice []model.GamePlatformFragment
 
 	for _, relationship := range gamePlatformRelationshipSlice {
-		platformFragment, err := service.FetchFragment[model.GamePlatformFragment](connection.Game, database.TableGamePlatformFragments, fmt.Sprintf("id=%d", relationship.Platform))
+		platformFragment, err := service.FetchFragment[model.GamePlatformFragment](database.Connection, database.TableGamePlatformFragments, fmt.Sprintf("id=%d", relationship.Platform))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch platform '%d': %v\n", relationship.Platform, err)
@@ -125,7 +124,7 @@ func fetchPlatformFragmentSlice(gameFragment model.GameFragment) ([]model.GamePl
 }
 
 func fetchStudioFragmentSlice(gameFragment model.GameFragment) ([]model.GameStudioFragment, error) {
-	gameStudioRelationshipSlice, err := service.FetchRelationshipSlice[model.GameStudioRelationship](connection.Game, database.TableGameStudioRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
+	gameStudioRelationshipSlice, err := service.FetchRelationshipSlice[model.GameStudioRelationship](database.Connection, database.TableGameStudioRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between game '%d' and studios: %v\n", gameFragment.ID, err)
@@ -136,7 +135,7 @@ func fetchStudioFragmentSlice(gameFragment model.GameFragment) ([]model.GameStud
 	var studioFragmentSlice []model.GameStudioFragment
 
 	for _, relationship := range gameStudioRelationshipSlice {
-		studioFragment, err := service.FetchFragment[model.GameStudioFragment](connection.Game, database.TableGameStudioFragments, fmt.Sprintf("id=%d", relationship.Studio))
+		studioFragment, err := service.FetchFragment[model.GameStudioFragment](database.Connection, database.TableGameStudioFragments, fmt.Sprintf("id=%d", relationship.Studio))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch studio '%d': %v\n", relationship.Studio, err)

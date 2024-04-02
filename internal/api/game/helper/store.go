@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	IGDBAPI "github.com/muzzarellimj/grace-material-api/internal/api/third_party/igdb.com"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/game"
 	IGDBModel "github.com/muzzarellimj/grace-material-api/internal/model/third_party/igdb.com"
@@ -27,28 +26,28 @@ func ProcessGameStorage(game IGDBModel.IGDBGameResponse) (int, error) {
 	platformIdSlice := processPlatformFragmentSlice(game.Platforms)
 	studioIdSlice := processStudioFragmentSlice(game.InvolvedCompanies)
 
-	service.StoreRelationshipSlice(connection.Game, database.TableGameFranchiseRelationships, database.PropertiesGameFranchiseRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableGameFranchiseRelationships, database.PropertiesGameFranchiseRelationships, service.RelationshipSliceArgument{
 		SourceName:          "game",
 		SourceArgument:      gameId,
 		DestinationName:     "franchise",
 		DestinationArgument: franchiseIdSlice,
 	})
 
-	service.StoreRelationshipSlice(connection.Game, database.TableGameGenreRelationships, database.PropertiesGameGenreRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableGameGenreRelationships, database.PropertiesGameGenreRelationships, service.RelationshipSliceArgument{
 		SourceName:          "game",
 		SourceArgument:      gameId,
 		DestinationName:     "genre",
 		DestinationArgument: genreIdSlice,
 	})
 
-	service.StoreRelationshipSlice(connection.Game, database.TableGamePlatformRelationships, database.PropertiesGamePlatformRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableGamePlatformRelationships, database.PropertiesGamePlatformRelationships, service.RelationshipSliceArgument{
 		SourceName:          "game",
 		SourceArgument:      gameId,
 		DestinationName:     "platform",
 		DestinationArgument: platformIdSlice,
 	})
 
-	service.StoreRelationshipSlice(connection.Game, database.TableGameStudioRelationships, database.PropertiesGameStudioRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableGameStudioRelationships, database.PropertiesGameStudioRelationships, service.RelationshipSliceArgument{
 		SourceName:          "game",
 		SourceArgument:      gameId,
 		DestinationName:     "studio",
@@ -59,7 +58,7 @@ func ProcessGameStorage(game IGDBModel.IGDBGameResponse) (int, error) {
 }
 
 func storeGameFragment(game IGDBModel.IGDBGameResponse) (int, error) {
-	gameId, err := service.StoreFragment(connection.Game, database.TableGameFragments, database.PropertiesGameFragments, pgx.NamedArgs{
+	gameId, err := service.StoreFragment(database.Connection, database.TableGameFragments, database.PropertiesGameFragments, pgx.NamedArgs{
 		"title":        game.Title,
 		"summary":      game.Summary,
 		"storyline":    game.Storyline,
@@ -81,7 +80,7 @@ func processFranchiseFragmentSlice(franchises []IGDBModel.IGDBNestedNamedResourc
 	var franchiseIdSlice []int
 
 	for _, resource := range franchises {
-		existingFranchiseFragment, err := service.FetchFragment[model.GameFranchiseFragment](connection.Game, database.TableGameFranchiseFragments, fmt.Sprintf("reference=%d", resource.ID))
+		existingFranchiseFragment, err := service.FetchFragment[model.GameFranchiseFragment](database.Connection, database.TableGameFranchiseFragments, fmt.Sprintf("reference=%d", resource.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing franchise '%d' fragment: %v\n", resource.ID, err)
@@ -95,7 +94,7 @@ func processFranchiseFragmentSlice(franchises []IGDBModel.IGDBNestedNamedResourc
 			continue
 		}
 
-		franchiseId, err := service.StoreFragment(connection.Game, database.TableGameFranchiseFragments, database.PropertiesGameFranchiseFragments, pgx.NamedArgs{
+		franchiseId, err := service.StoreFragment(database.Connection, database.TableGameFranchiseFragments, database.PropertiesGameFranchiseFragments, pgx.NamedArgs{
 			"name":      resource.Name,
 			"reference": resource.ID,
 		})
@@ -116,7 +115,7 @@ func processGenreFragmentSlice(genres []IGDBModel.IGDBNestedNamedResource) []int
 	var genreIdSlice []int
 
 	for _, resource := range genres {
-		existingGenreFragment, err := service.FetchFragment[model.GameGenreFragment](connection.Game, database.TableGameGenreFragments, fmt.Sprintf("reference=%d", resource.ID))
+		existingGenreFragment, err := service.FetchFragment[model.GameGenreFragment](database.Connection, database.TableGameGenreFragments, fmt.Sprintf("reference=%d", resource.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing genre '%d' fragment: %v\n", resource.ID, err)
@@ -130,7 +129,7 @@ func processGenreFragmentSlice(genres []IGDBModel.IGDBNestedNamedResource) []int
 			continue
 		}
 
-		genreId, err := service.StoreFragment(connection.Game, database.TableGameGenreFragments, database.PropertiesGameGenreFragments, pgx.NamedArgs{
+		genreId, err := service.StoreFragment(database.Connection, database.TableGameGenreFragments, database.PropertiesGameGenreFragments, pgx.NamedArgs{
 			"name":      resource.Name,
 			"reference": resource.ID,
 		})
@@ -151,7 +150,7 @@ func processPlatformFragmentSlice(platforms []IGDBModel.IGDBNestedNamedResource)
 	var platformIdSlice []int
 
 	for _, resource := range platforms {
-		existingPlatformFragment, err := service.FetchFragment[model.GamePlatformFragment](connection.Game, database.TableGamePlatformFragments, fmt.Sprintf("reference=%d", resource.ID))
+		existingPlatformFragment, err := service.FetchFragment[model.GamePlatformFragment](database.Connection, database.TableGamePlatformFragments, fmt.Sprintf("reference=%d", resource.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing platform '%d' fragment: %v\n", resource.ID, err)
@@ -165,7 +164,7 @@ func processPlatformFragmentSlice(platforms []IGDBModel.IGDBNestedNamedResource)
 			continue
 		}
 
-		platformId, err := service.StoreFragment(connection.Game, database.TableGamePlatformFragments, database.PropertiesGamePlatformFragments, pgx.NamedArgs{
+		platformId, err := service.StoreFragment(database.Connection, database.TableGamePlatformFragments, database.PropertiesGamePlatformFragments, pgx.NamedArgs{
 			"name":      resource.Name,
 			"reference": resource.ID,
 		})
@@ -190,7 +189,7 @@ func processStudioFragmentSlice(companies []IGDBModel.IGDBNestedInvolvedCompany)
 			continue
 		}
 
-		existingStudioFragment, err := service.FetchFragment[model.GameStudioFragment](connection.Game, database.TableGameStudioFragments, fmt.Sprintf("reference=%d", company.Company))
+		existingStudioFragment, err := service.FetchFragment[model.GameStudioFragment](database.Connection, database.TableGameStudioFragments, fmt.Sprintf("reference=%d", company.Company))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing studio '%d' fragment: %v\n", company.Company, err)
@@ -212,7 +211,7 @@ func processStudioFragmentSlice(companies []IGDBModel.IGDBNestedInvolvedCompany)
 			continue
 		}
 
-		studioId, err := service.StoreFragment(connection.Game, database.TableGameStudioFragments, database.PropertiesGameStudioFragments, pgx.NamedArgs{
+		studioId, err := service.StoreFragment(database.Connection, database.TableGameStudioFragments, database.PropertiesGameStudioFragments, pgx.NamedArgs{
 			"name":        studio.Name,
 			"description": studio.Description,
 			"reference":   studio.ID,
