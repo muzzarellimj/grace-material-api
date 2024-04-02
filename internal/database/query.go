@@ -9,7 +9,6 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 )
 
 // Create a PostgreSQL query statement with given selection, from, where, and group statements,
@@ -49,7 +48,7 @@ func CreateQuery(selection string, from string, where string, group string, dire
 // query statement.
 //
 // Return: pgx.Rows-type response and nil with success, nil and error without.
-func ExecuteQuery(connection connection.PgxPool, statement string) (pgx.Rows, error) {
+func ExecuteQuery(connection PgxPool, statement string) (pgx.Rows, error) {
 	if statement == "" {
 		err := errors.New("unable to execute query without 'statement' arg")
 

@@ -138,7 +138,7 @@ func TestMapQueryResponseReturnsOne(t *testing.T) {
 	mock.ExpectQuery("SELECT \\* FROM movies WHERE id=1").
 		WillReturnRows(pgxmock.
 			NewRows([]string{"id", "title", "tagline", "description", "release_date", "runtime", "image", "reference"}).
-			AddRow(1, "Encanto", "", "", "", 0, "", 812))
+			AddRow(1, "Encanto", "", "", int64(0), 0, "", 812))
 
 	statement, _ := database.CreateQuery("*", "movies", "id=1", "")
 	rows, _ := database.ExecuteQuery(mock, statement)
