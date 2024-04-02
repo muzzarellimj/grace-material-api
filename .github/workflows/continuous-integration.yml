@@ -27,6 +27,10 @@ jobs:
               with:
                   go-version: '1.21'
             - run: go test -v ./...
+              env:
+                  AWS_PROXY_HOST: ${{ secrets.AWS_PROXY_HOST }}
+                  AWS_PROXY_API_KEY: ${{ secrets.AWS_PROXY_API_KEY }}
+                  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
 
     release:
         needs: test
