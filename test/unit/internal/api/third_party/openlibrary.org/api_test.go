@@ -8,7 +8,7 @@ import (
 )
 
 func TestOLGetAuthorReturnsOLAuthorResponse(t *testing.T) {
-	id := "OL10011333A"
+	id := "OL368638A"
 
 	expectedId := fmt.Sprint("/authors/", id)
 	expectedName := "Andrzej Sapkowski"
