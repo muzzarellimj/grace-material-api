@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -79,8 +80,8 @@ func StoreFragment(connection database.PgxPool, table string, properties []strin
 	defer func() {
 		err = tx.Rollback(context.Background())
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to rollback fragment insertion transaction: %v\n", err)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			fmt.Fprintf(os.Stderr, "Unable to rollback transaction: %v\n", err)
 		}
 	}()
 
