@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
+	"github.com/muzzarellimj/grace-material-api/internal/database"
 )
 
 type RelationshipSliceArgument struct {
@@ -17,7 +17,7 @@ type RelationshipSliceArgument struct {
 	DestinationArgument []int
 }
 
-func FetchRelationship[M interface{}](connection connection.PgxPool, table string, constraint string) (M, error) {
+func FetchRelationship[M interface{}](connection database.PgxPool, table string, constraint string) (M, error) {
 	var zero M
 
 	relationshipSlice, err := FetchFragmentSlice[M](connection, table, constraint)
@@ -35,7 +35,7 @@ func FetchRelationship[M interface{}](connection connection.PgxPool, table strin
 	return zero, nil
 }
 
-func FetchRelationshipSlice[M interface{}](connection connection.PgxPool, table string, constraint string) ([]M, error) {
+func FetchRelationshipSlice[M interface{}](connection database.PgxPool, table string, constraint string) ([]M, error) {
 	var zero []M
 
 	relationshipSlice, err := FetchFragmentSlice[M](connection, table, constraint)
@@ -52,7 +52,7 @@ func FetchRelationshipSlice[M interface{}](connection connection.PgxPool, table 
 // Store a relationship in the provided table with the provided properties (column names) and named arguments.
 //
 // Return: nil with success, and error without.
-func StoreRelationship(connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) error {
+func StoreRelationship(connection database.PgxPool, table string, properties []string, arguments pgx.NamedArgs) error {
 	var names []string
 
 	for _, property := range properties {
@@ -98,7 +98,7 @@ func StoreRelationship(connection connection.PgxPool, table string, properties [
 
 // Store a relationship slice in the provided table with the provided properties (column names) and relationship slice argument, which
 // describes the source name and argument, destination name, and destination slice.
-func StoreRelationshipSlice(connection connection.PgxPool, table string, properties []string, relationship RelationshipSliceArgument) {
+func StoreRelationshipSlice(connection database.PgxPool, table string, properties []string, relationship RelationshipSliceArgument) {
 	for _, destinationArgument := range relationship.DestinationArgument {
 		err := StoreRelationship(connection, table, properties, pgx.NamedArgs{
 			relationship.SourceName:      relationship.SourceArgument,

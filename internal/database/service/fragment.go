@@ -8,10 +8,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 )
 
-func FetchFragment[M interface{}](connection connection.PgxPool, table string, constraint string) (M, error) {
+func FetchFragment[M interface{}](connection database.PgxPool, table string, constraint string) (M, error) {
 	var zero M
 
 	fragmentSlice, err := FetchFragmentSlice[M](connection, table, constraint)
@@ -29,7 +28,7 @@ func FetchFragment[M interface{}](connection connection.PgxPool, table string, c
 	return zero, nil
 }
 
-func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table string, constraint string) ([]M, error) {
+func FetchFragmentSlice[M interface{}](connection database.PgxPool, table string, constraint string) ([]M, error) {
 	statement, err := database.CreateQuery("*", table, constraint, "")
 
 	if err != nil {
@@ -60,7 +59,7 @@ func FetchFragmentSlice[M interface{}](connection connection.PgxPool, table stri
 // Store a fragment in the provided table with the provided properties (column names) and named arguments.
 //
 // Return: the numeric identifier for the stored fragment and nil with success, or 0 and error without.
-func StoreFragment(connection connection.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
+func StoreFragment(connection database.PgxPool, table string, properties []string, arguments pgx.NamedArgs) (int, error) {
 	var names []string
 
 	for _, property := range properties {

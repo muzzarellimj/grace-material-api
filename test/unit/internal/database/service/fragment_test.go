@@ -17,7 +17,7 @@ func TestFetchFragmentSliceReturnsOne(t *testing.T) {
 	mock.ExpectQuery("SELECT \\* FROM movies WHERE id=1").
 		WillReturnRows(pgxmock.
 			NewRows([]string{"id", "title", "tagline", "description", "release_date", "runtime", "image", "reference"}).
-			AddRow(1, "", "", "", "", 0, "", 0))
+			AddRow(1, "", "", "", int64(0), 0, "", 0))
 
 	_, err := service.FetchFragmentSlice[model.MovieFragment](mock, database.TableMovieFragments, "id=1")
 
