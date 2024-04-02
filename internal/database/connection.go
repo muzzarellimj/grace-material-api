@@ -1,4 +1,4 @@
-package connection
+package database
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var Pool PgxPool
+var Connection PgxPool
 
 // A wrapper to mask pgxpool.Pool as a local interface.
 type PgxPool interface {
@@ -38,12 +38,12 @@ func Connect(url string) error {
 		return err
 	}
 
-	Pool = connection
+	Connection = connection
 
 	return nil
 }
 
 // Close the Grace database pool connection.
 func Disconnect() {
-	Pool.Close()
+	Connection.Close()
 }

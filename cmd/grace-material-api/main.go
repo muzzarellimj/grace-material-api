@@ -10,7 +10,7 @@ import (
 	bookApi "github.com/muzzarellimj/grace-material-api/internal/api/book"
 	gameApi "github.com/muzzarellimj/grace-material-api/internal/api/game"
 	movieApi "github.com/muzzarellimj/grace-material-api/internal/api/movie"
-	connection "github.com/muzzarellimj/grace-material-api/internal/database"
+	"github.com/muzzarellimj/grace-material-api/internal/database"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Unable to load .env configuration file; this relies on explicitly declared configuration values and may cause issues outside deployed environments: %v\n", err)
 	}
 
-	err = connection.Connect(os.Getenv("DATABASE_URL"))
+	err = database.Connect(os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to persist Grace database pool connection: %v\n", err)
@@ -28,7 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer connection.Disconnect()
+	defer database.Disconnect()
 
 	router := gin.Default()
 	router.Use(cors.Default())
