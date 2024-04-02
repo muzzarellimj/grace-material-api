@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/muzzarellimj/grace-material-api/internal/api/movie/helper"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/movie"
 	tmodel "github.com/muzzarellimj/grace-material-api/internal/model/third_party/themoviedb.org"
@@ -15,11 +14,9 @@ import (
 )
 
 func fetchMovie(constraint string) (model.Movie, string, error) {
-	var connection connection.PgxPool = connection.Movie
-
 	const errorResponseMessage string = "Unable to fetch movie metadata and map to supported data structure."
 
-	movieFragment, err := service.FetchFragment[model.MovieFragment](connection, database.TableMovieFragments, constraint)
+	movieFragment, err := service.FetchFragment[model.MovieFragment](database.Connection, database.TableMovieFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch movie: %v\n", err)
@@ -27,7 +24,7 @@ func fetchMovie(constraint string) (model.Movie, string, error) {
 		return model.Movie{}, errorResponseMessage, err
 	}
 
-	movieGenreRelationships, err := service.FetchRelationshipSlice[model.MovieGenreRelationship](connection, database.TableMovieGenreRelationships, fmt.Sprintf("movie=%d", movieFragment.ID))
+	movieGenreRelationships, err := service.FetchRelationshipSlice[model.MovieGenreRelationship](database.Connection, database.TableMovieGenreRelationships, fmt.Sprintf("movie=%d", movieFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and genres: %v\n", err)
@@ -38,14 +35,14 @@ func fetchMovie(constraint string) (model.Movie, string, error) {
 	var genreFragments []model.MovieGenreFragment
 
 	for _, relationship := range movieGenreRelationships {
-		genreFragment, err := service.FetchFragment[model.MovieGenreFragment](connection, database.TableMovieGenreFragments, fmt.Sprintf("id=%d", relationship.Genre))
+		genreFragment, err := service.FetchFragment[model.MovieGenreFragment](database.Connection, database.TableMovieGenreFragments, fmt.Sprintf("id=%d", relationship.Genre))
 
 		if err == nil {
 			genreFragments = append(genreFragments, genreFragment)
 		}
 	}
 
-	movieProductionCompanyRelationships, err := service.FetchRelationshipSlice[model.MovieProductionCompanyRelationship](connection, database.TableMovieProductionCompanyRelationships, fmt.Sprintf("movie=%d", movieFragment.ID))
+	movieProductionCompanyRelationships, err := service.FetchRelationshipSlice[model.MovieProductionCompanyRelationship](database.Connection, database.TableMovieProductionCompanyRelationships, fmt.Sprintf("movie=%d", movieFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between movies and production companies: %v\n", err)
@@ -56,7 +53,7 @@ func fetchMovie(constraint string) (model.Movie, string, error) {
 	var productionCompanyFragments []model.MovieProductionCompanyFragment
 
 	for _, relationship := range movieProductionCompanyRelationships {
-		productionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](connection, database.TableMovieProductionCompanyFragments, fmt.Sprintf("id=%d", relationship.ProductionCompany))
+		productionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](database.Connection, database.TableMovieProductionCompanyFragments, fmt.Sprintf("id=%d", relationship.ProductionCompany))
 
 		if err == nil {
 			productionCompanyFragments = append(productionCompanyFragments, productionCompanyFragment)
@@ -100,7 +97,7 @@ func storeMovie(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
 }
 
 func storeMovieFragment(tmdbMovie tmodel.TMDBMovieDetailResponse) (int, error) {
-	movieId, err := service.StoreFragment(connection.Movie, database.TableMovieFragments, database.PropertiesMovieFragments, pgx.NamedArgs{
+	movieId, err := service.StoreFragment(database.Connection, database.TableMovieFragments, database.PropertiesMovieFragments, pgx.NamedArgs{
 		"title":        tmdbMovie.Title,
 		"tagline":      tmdbMovie.Tagline,
 		"description":  tmdbMovie.Overview,
@@ -123,7 +120,7 @@ func storeGenreFragments(genres []tmodel.TMDBGenre) []int {
 	var genreIdSlice []int
 
 	for _, genre := range genres {
-		existingGenreFragment, err := service.FetchFragment[model.MovieGenreFragment](connection.Movie, database.TableMovieGenreFragments, fmt.Sprintf("reference=%d", genre.ID))
+		existingGenreFragment, err := service.FetchFragment[model.MovieGenreFragment](database.Connection, database.TableMovieGenreFragments, fmt.Sprintf("reference=%d", genre.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing genre fragment: %v\n", err)
@@ -137,7 +134,7 @@ func storeGenreFragments(genres []tmodel.TMDBGenre) []int {
 			continue
 		}
 
-		storedGenreId, err := service.StoreFragment(connection.Movie, database.TableMovieGenreFragments, database.PropertiesMovieGenreFragments, pgx.NamedArgs{
+		storedGenreId, err := service.StoreFragment(database.Connection, database.TableMovieGenreFragments, database.PropertiesMovieGenreFragments, pgx.NamedArgs{
 			"name":      genre.Name,
 			"reference": genre.ID,
 		})
@@ -160,7 +157,7 @@ func storeProductionCompanyFragments(productionCompanies []tmodel.TMDBProduction
 	var productionCompanyIdSlice []int
 
 	for _, productionCompany := range productionCompanies {
-		existingProductionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](connection.Movie, database.TableMovieProductionCompanyFragments, fmt.Sprintf("reference=%d", productionCompany.ID))
+		existingProductionCompanyFragment, err := service.FetchFragment[model.MovieProductionCompanyFragment](database.Connection, database.TableMovieProductionCompanyFragments, fmt.Sprintf("reference=%d", productionCompany.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing production company fragment: %v\n", err)
@@ -174,7 +171,7 @@ func storeProductionCompanyFragments(productionCompanies []tmodel.TMDBProduction
 			continue
 		}
 
-		storedProductionCompanyId, err := service.StoreFragment(connection.Movie, database.TableMovieProductionCompanyFragments, database.PropertiesMovieProductionCompanyFragments, pgx.NamedArgs{
+		storedProductionCompanyId, err := service.StoreFragment(database.Connection, database.TableMovieProductionCompanyFragments, database.PropertiesMovieProductionCompanyFragments, pgx.NamedArgs{
 			"name":      productionCompany.Name,
 			"image":     helper.FormatImagePath(productionCompany.Image),
 			"reference": productionCompany.ID,
@@ -196,7 +193,7 @@ func storeProductionCompanyFragments(productionCompanies []tmodel.TMDBProduction
 
 func storeMovieGenreRelationships(movieId int, genreIdSlice []int) {
 	for _, genreId := range genreIdSlice {
-		err := service.StoreRelationship(connection.Movie, database.TableMovieGenreRelationships, database.PropertiesMovieGenreRelationships, pgx.NamedArgs{
+		err := service.StoreRelationship(database.Connection, database.TableMovieGenreRelationships, database.PropertiesMovieGenreRelationships, pgx.NamedArgs{
 			"movie": movieId,
 			"genre": genreId,
 		})
@@ -209,7 +206,7 @@ func storeMovieGenreRelationships(movieId int, genreIdSlice []int) {
 
 func storeMovieProductionCompanyRelationships(movieId int, productionCompanyIdSlice []int) {
 	for _, productionCompanyId := range productionCompanyIdSlice {
-		err := service.StoreRelationship(connection.Movie, database.TableMovieProductionCompanyRelationships, database.PropertiesMovieProductionCompanyRelationships, pgx.NamedArgs{
+		err := service.StoreRelationship(database.Connection, database.TableMovieProductionCompanyRelationships, database.PropertiesMovieProductionCompanyRelationships, pgx.NamedArgs{
 			"movie":              movieId,
 			"production_company": productionCompanyId,
 		})
