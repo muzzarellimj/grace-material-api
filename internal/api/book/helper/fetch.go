@@ -5,13 +5,12 @@ import (
 	"os"
 
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/book"
 )
 
 func FetchBook(constraint string) (model.Book, error) {
-	bookFragment, err := service.FetchFragment[model.BookFragment](connection.Book, database.TableBookFragments, constraint)
+	bookFragment, err := service.FetchFragment[model.BookFragment](database.Connection, database.TableBookFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch book with constraint '%s': %v\n", constraint, err)
@@ -41,7 +40,7 @@ func FetchBook(constraint string) (model.Book, error) {
 }
 
 func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragment, error) {
-	bookAuthorRelationshipSlice, err := service.FetchRelationshipSlice[model.BookAuthorRelationship](connection.Book, database.TableBookAuthorRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
+	bookAuthorRelationshipSlice, err := service.FetchRelationshipSlice[model.BookAuthorRelationship](database.Connection, database.TableBookAuthorRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between book '%d' and authors: %v\n", bookFragment.ID, err)
@@ -52,7 +51,7 @@ func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuth
 	var authorFragmentSlice []model.BookAuthorFragment
 
 	for _, relationship := range bookAuthorRelationshipSlice {
-		authorFragment, err := service.FetchFragment[model.BookAuthorFragment](connection.Book, database.TableBookAuthorFragments, fmt.Sprintf("id=%d", relationship.Author))
+		authorFragment, err := service.FetchFragment[model.BookAuthorFragment](database.Connection, database.TableBookAuthorFragments, fmt.Sprintf("id=%d", relationship.Author))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch author '%d': %v\n", relationship.Author, err)
@@ -67,7 +66,7 @@ func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuth
 }
 
 func fetchPublisherFragmentSlice(bookFragment model.BookFragment) ([]model.BookPublisherFragment, error) {
-	bookPublisherRelationshipSlice, err := service.FetchRelationshipSlice[model.BookPublisherRelationship](connection.Book, database.TableBookPublisherRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
+	bookPublisherRelationshipSlice, err := service.FetchRelationshipSlice[model.BookPublisherRelationship](database.Connection, database.TableBookPublisherRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between book '%d' and publishers: %v\n", bookFragment.ID, err)
@@ -78,7 +77,7 @@ func fetchPublisherFragmentSlice(bookFragment model.BookFragment) ([]model.BookP
 	var publisherFragmentSlice []model.BookPublisherFragment
 
 	for _, relationship := range bookPublisherRelationshipSlice {
-		publisherFragment, err := service.FetchFragment[model.BookPublisherFragment](connection.Book, database.TableBookPublisherFragments, fmt.Sprintf("id=%d", relationship.Publisher))
+		publisherFragment, err := service.FetchFragment[model.BookPublisherFragment](database.Connection, database.TableBookPublisherFragments, fmt.Sprintf("id=%d", relationship.Publisher))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch publisher '%d': %v\n", relationship.Publisher, err)
@@ -93,7 +92,7 @@ func fetchPublisherFragmentSlice(bookFragment model.BookFragment) ([]model.BookP
 }
 
 func fetchTopicFragmentSlice(bookFragment model.BookFragment) ([]model.BookTopicFragment, error) {
-	bookTopicRelationshipSlice, err := service.FetchRelationshipSlice[model.BookTopicRelationship](connection.Book, database.TableBookTopicRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
+	bookTopicRelationshipSlice, err := service.FetchRelationshipSlice[model.BookTopicRelationship](database.Connection, database.TableBookTopicRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch relationships between book '%d' and topics: %v\n", bookFragment.ID, err)
@@ -104,7 +103,7 @@ func fetchTopicFragmentSlice(bookFragment model.BookFragment) ([]model.BookTopic
 	var topicFragmentSlice []model.BookTopicFragment
 
 	for _, relationship := range bookTopicRelationshipSlice {
-		topicFragment, err := service.FetchFragment[model.BookTopicFragment](connection.Book, database.TableBookTopicFragments, fmt.Sprintf("id=%d", relationship.Topic))
+		topicFragment, err := service.FetchFragment[model.BookTopicFragment](database.Connection, database.TableBookTopicFragments, fmt.Sprintf("id=%d", relationship.Topic))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch topic '%d': %v\n", relationship.Topic, err)

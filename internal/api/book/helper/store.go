@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
-	"github.com/muzzarellimj/grace-material-api/internal/database/connection"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/book"
 	OLModel "github.com/muzzarellimj/grace-material-api/internal/model/third_party/openlibrary.org"
@@ -27,21 +26,21 @@ func ProcessBookStorage(edition OLModel.OLEditionResponse, work OLModel.OLWorkRe
 	publisherIdSlice := processPublisherFragmentSliceStorage(edition.Publishers)
 	topicIdSlice := processTopicFragmentSliceStorage(work.Subjects)
 
-	service.StoreRelationshipSlice(connection.Book, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableBookAuthorRelationships, database.PropertiesBookAuthorRelationships, service.RelationshipSliceArgument{
 		SourceName:          "book",
 		SourceArgument:      bookId,
 		DestinationName:     "author",
 		DestinationArgument: authorIdSlice,
 	})
 
-	service.StoreRelationshipSlice(connection.Book, database.TableBookPublisherRelationships, database.PropertiesBookPublisherRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableBookPublisherRelationships, database.PropertiesBookPublisherRelationships, service.RelationshipSliceArgument{
 		SourceName:          "book",
 		SourceArgument:      bookId,
 		DestinationName:     "publisher",
 		DestinationArgument: publisherIdSlice,
 	})
 
-	service.StoreRelationshipSlice(connection.Book, database.TableBookTopicRelationships, database.PropertiesBookTopicRelationships, service.RelationshipSliceArgument{
+	service.StoreRelationshipSlice(database.Connection, database.TableBookTopicRelationships, database.PropertiesBookTopicRelationships, service.RelationshipSliceArgument{
 		SourceName:          "book",
 		SourceArgument:      bookId,
 		DestinationName:     "topic",
@@ -52,7 +51,7 @@ func ProcessBookStorage(edition OLModel.OLEditionResponse, work OLModel.OLWorkRe
 }
 
 func storeBookFragment(edition OLModel.OLEditionResponse, work OLModel.OLWorkResponse) (int, error) {
-	bookId, err := service.StoreFragment(connection.Book, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
+	bookId, err := service.StoreFragment(database.Connection, database.TableBookFragments, database.PropertiesBookFragments, pgx.NamedArgs{
 		"title":             edition.Title,
 		"subtitle":          edition.Subtitle,
 		"description":       ExtractDescription(work.Description),
@@ -78,7 +77,7 @@ func processAuthorFragmentSliceStorage(authors []OLModel.OLResourceReference) []
 	var authorIdSlice []int
 
 	for _, resource := range authors {
-		existingAuthorFragment, err := service.FetchFragment[model.BookAuthorFragment](connection.Book, database.TableBookAuthorFragments, fmt.Sprintf("reference='%s'", ExtractResourceId(resource.ID)))
+		existingAuthorFragment, err := service.FetchFragment[model.BookAuthorFragment](database.Connection, database.TableBookAuthorFragments, fmt.Sprintf("reference='%s'", ExtractResourceId(resource.ID)))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing author '%s' fragment: %v\n", ExtractResourceId(resource.ID), err)
@@ -102,7 +101,7 @@ func processAuthorFragmentSliceStorage(authors []OLModel.OLResourceReference) []
 
 		firstName, middleName, lastName := ExtractName(author.Name)
 
-		authorId, err := service.StoreFragment(connection.Book, database.TableBookAuthorFragments, database.PropertiesBookAuthorFragments, pgx.NamedArgs{
+		authorId, err := service.StoreFragment(database.Connection, database.TableBookAuthorFragments, database.PropertiesBookAuthorFragments, pgx.NamedArgs{
 			"first_name":  firstName,
 			"middle_name": middleName,
 			"last_name":   lastName,
@@ -129,7 +128,7 @@ func processPublisherFragmentSliceStorage(publishers []string) []int {
 	var publisherIdSlice []int
 
 	for _, publisher := range publishers {
-		existingPublisherFragment, err := service.FetchFragment[model.BookPublisherFragment](connection.Book, database.TableBookPublisherFragments, fmt.Sprintf("name='%s'", util.FormatPSQLString(publisher)))
+		existingPublisherFragment, err := service.FetchFragment[model.BookPublisherFragment](database.Connection, database.TableBookPublisherFragments, fmt.Sprintf("name='%s'", util.FormatPSQLString(publisher)))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing publisher '%s' fragment: %v\n", publisher, err)
@@ -143,7 +142,7 @@ func processPublisherFragmentSliceStorage(publishers []string) []int {
 			continue
 		}
 
-		publisherId, err := service.StoreFragment(connection.Book, database.TableBookPublisherFragments, database.PropertiesBookPublisherFragments, pgx.NamedArgs{
+		publisherId, err := service.StoreFragment(database.Connection, database.TableBookPublisherFragments, database.PropertiesBookPublisherFragments, pgx.NamedArgs{
 			"name": publisher,
 		})
 
@@ -165,7 +164,7 @@ func processTopicFragmentSliceStorage(topics []string) []int {
 	var topicIdSlice []int
 
 	for _, topic := range topics {
-		existingTopicFragment, err := service.FetchFragment[model.BookTopicFragment](connection.Book, database.TableBookTopicFragments, fmt.Sprintf("name='%s'", util.FormatPSQLString(topic)))
+		existingTopicFragment, err := service.FetchFragment[model.BookTopicFragment](database.Connection, database.TableBookTopicFragments, fmt.Sprintf("name='%s'", util.FormatPSQLString(topic)))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch existing topic '%s' fragment: %v\n", topic, err)
@@ -179,7 +178,7 @@ func processTopicFragmentSliceStorage(topics []string) []int {
 			continue
 		}
 
-		topicId, err := service.StoreFragment(connection.Book, database.TableBookTopicFragments, database.PropertiesBookTopicFragments, pgx.NamedArgs{
+		topicId, err := service.StoreFragment(database.Connection, database.TableBookTopicFragments, database.PropertiesBookTopicFragments, pgx.NamedArgs{
 			"name": topic,
 		})
 
