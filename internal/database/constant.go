@@ -12,7 +12,7 @@ const (
 
 	TableGameFragments              = "games"
 	TableGameFranchiseFragments     = "franchises"
-	TableGameGenreFragments         = "genres"
+	TableGameGenreFragments         = "ggenres"
 	TableGamePlatformFragments      = "platforms"
 	TableGameStudioFragments        = "studios"
 	TableGameFranchiseRelationships = "games_franchises"
@@ -21,7 +21,7 @@ const (
 	TableGameStudioRelationships    = "games_studios"
 
 	TableMovieFragments                      = "movies"
-	TableMovieGenreFragments                 = "genres"
+	TableMovieGenreFragments                 = "mgenres"
 	TableMovieProductionCompanyFragments     = "production_companies"
 	TableMovieGenreRelationships             = "movies_genres"
 	TableMovieProductionCompanyRelationships = "movies_production_companies"
