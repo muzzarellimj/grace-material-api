@@ -13,7 +13,7 @@ func TestIGDBGetResourceReturnsGame(t *testing.T) {
 
 	expectedTitle := "The Last of Us"
 
-	actual, err := api.IGDBGetResource[model.IGDBGameResponse](api.IGDBEndpointGame, "fields *; where id = 1009;")
+	actual, err := api.IGDBGetResource[model.IGDBGameResponse](api.IGDBEndpointGame, "fields id,cover.*,first_release_date,franchises.*,genres.*,involved_companies.*,name,platforms.*,storyline,summary; where id = 1009;")
 
 	if err != nil {
 		t.Fatalf("Unable to execute request to get IGDB resource: %v\n", err)
@@ -27,7 +27,7 @@ func TestIGDBGetResourceReturnsGame(t *testing.T) {
 func TestIGDBGetResourceReturnsEmpty(t *testing.T) {
 	godotenv.Load("../../../../../../.env")
 
-	actual, err := api.IGDBGetResource[model.IGDBGameResponse](api.IGDBEndpointGame, "fields *; where id = -1;")
+	actual, err := api.IGDBGetResource[model.IGDBGameResponse](api.IGDBEndpointGame, "fields id,cover.*,first_release_date,franchises.*,genres.*,involved_companies.*,name,platforms.*,storyline,summary; where id = -1;")
 
 	if err != nil {
 		t.Fatalf("Unable to execute request to get IGDB resource: %v\n", err)
