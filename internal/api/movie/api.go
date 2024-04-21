@@ -4,45 +4,65 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/internal/api/movie/helper"
 	tapi "github.com/muzzarellimj/grace-material-api/internal/api/third_party/themoviedb.org"
 )
 
-func HandleGetMovie(context *gin.Context) {
-	id, err := strconv.Atoi(context.Query("id"))
+const errorMessage string = "Unable to fetch movie metadata and map to supported data structure."
 
-	if err != nil {
+func HandleGetMovie(context *gin.Context) {
+	idArg := context.Query("id")
+
+	if len(idArg) == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
 	}
 
-	movie, message, err := fetchMovie(fmt.Sprintf("id=%d", id))
+	idSlice := strings.Split(idArg, ",")
 
-	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": message,
+	if len(idSlice) == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
 	}
 
-	if movie.ID != 0 {
-		context.IndentedJSON(http.StatusOK, gin.H{
-			"status": http.StatusOK,
-			"data":   movie,
+	var constraintSlice []string
+
+	for _, id := range idSlice {
+		constraintSlice = append(constraintSlice, fmt.Sprintf("id=%s", id))
+	}
+
+	movieSlice, errorSlice := helper.FetchMovieSlice(constraintSlice)
+
+	if len(errorSlice) != 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": errorMessage,
 		})
 
 		return
 	}
 
-	context.Status(http.StatusNoContent)
+	if len(movieSlice) == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data":   movieSlice,
+	})
 }
 
 func HandlePostMovie(context *gin.Context) {
@@ -57,12 +77,12 @@ func HandlePostMovie(context *gin.Context) {
 		return
 	}
 
-	existingMovie, message, err := fetchMovie(fmt.Sprintf("reference=%d", id))
+	existingMovie, err := helper.FetchMovie(fmt.Sprintf("reference=%d", id))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": message,
+			"message": errorMessage,
 		})
 
 		return
@@ -82,7 +102,7 @@ func HandlePostMovie(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": message,
+			"message": errorMessage,
 		})
 
 		return
@@ -99,7 +119,7 @@ func HandlePostMovie(context *gin.Context) {
 	if err != nil || insertedMovieId == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": message,
+			"message": errorMessage,
 		})
 
 		return
