@@ -1,0 +1,3 @@
+# grace-material-api configuration
+builds:
+    - main: ./cmd/grace-material-api/
