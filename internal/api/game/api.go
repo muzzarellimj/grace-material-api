@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/internal/api/game/helper"
 	IGDBAPI "github.com/muzzarellimj/grace-material-api/internal/api/third_party/igdb.com"
+	model "github.com/muzzarellimj/grace-material-api/internal/model/game"
 	IGDBModel "github.com/muzzarellimj/grace-material-api/internal/model/third_party/igdb.com"
 )
 
@@ -62,6 +63,45 @@ func HandleGetGame(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, gin.H{
 		"status": http.StatusOK,
 		"data":   gameSlice,
+	})
+}
+
+func HandlePutGame(context *gin.Context) {
+	var game model.GameFragment
+
+	err := context.BindJSON(&game)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Unable to bind request JSON body to game model.",
+		})
+
+		return
+	}
+
+	id, err := helper.UpdateGameFragment(game)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Unable to update movie fragment.",
+		})
+
+		return
+	}
+
+	if id == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data": map[string]any{
+			"id": id,
+		},
 	})
 }
 

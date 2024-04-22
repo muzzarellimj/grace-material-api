@@ -38,6 +38,7 @@ func main() {
 	router.GET("/api/book/search", bookApi.HandleGetBookSearch)
 
 	router.GET("/api/game", gameApi.HandleGetGame)
+	router.PUT("/api/game", gameApi.HandlePutGame)
 	router.POST("/api/game", gameApi.HandlePostGame)
 	router.GET("/api/game/search", gameApi.HandleGetGameSearch)
 
