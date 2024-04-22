@@ -10,12 +10,14 @@ import (
 )
 
 func FetchBook(constraint string) (model.Book, error) {
+	zero := model.Book{}
+
 	bookFragment, err := service.FetchFragment[model.BookFragment](database.Connection, database.TableBookFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch book with constraint '%s': %v\n", constraint, err)
 
-		return model.Book{}, err
+		return zero, err
 	}
 
 	authorFragmentSlice, err := fetchAuthorFragmentSlice(bookFragment)
@@ -36,7 +38,30 @@ func FetchBook(constraint string) (model.Book, error) {
 		fmt.Fprintf(os.Stderr, "Unable to fetch topics related to book '%d': %v\n", bookFragment.ID, err)
 	}
 
-	return mapBook(bookFragment, authorFragmentSlice, publisherFragmentSlice, topicFragmentSlice), nil
+	book := mapBook(bookFragment, authorFragmentSlice, publisherFragmentSlice, topicFragmentSlice)
+
+	return book, nil
+}
+
+func FetchBookSlice(constraintSlice []string) ([]model.Book, []error) {
+	var bookSlice []model.Book
+	var errSlice []error
+
+	for _, constraint := range constraintSlice {
+		book, err := FetchBook(constraint)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch and map book with constraint '%s': %v\n", constraint, err)
+
+			errSlice = append(errSlice, err)
+		}
+
+		if book.ID != 0 {
+			bookSlice = append(bookSlice, book)
+		}
+	}
+
+	return bookSlice, errSlice
 }
 
 func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragment, error) {
