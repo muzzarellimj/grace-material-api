@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -67,18 +66,18 @@ func HandleGetGame(context *gin.Context) {
 }
 
 func HandlePostGame(context *gin.Context) {
-	id, err := strconv.Atoi(context.Query("id"))
+	idArg := context.Query("id")
 
-	if err != nil || id <= 0 {
+	if len(idArg) == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
 	}
 
-	existingGame, err := helper.FetchGame(fmt.Sprintf("reference=%d", id))
+	existingGame, err := helper.FetchGame(fmt.Sprintf("reference=%s", idArg))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -92,13 +91,15 @@ func HandlePostGame(context *gin.Context) {
 	if existingGame.ID != 0 {
 		context.IndentedJSON(http.StatusOK, gin.H{
 			"status": http.StatusOK,
-			"data":   existingGame,
+			"data": map[string]any{
+				"id": existingGame.ID,
+			},
 		})
 
 		return
 	}
 
-	game, err := IGDBAPI.IGDBGetResource[IGDBModel.IGDBGameResponse](IGDBAPI.IGDBEndpointGame, fmt.Sprintf("fields id,cover.*,first_release_date,franchises.*,genres.*,involved_companies.*,name,platforms.*,storyline,summary; where id=%d;", id))
+	game, err := IGDBAPI.IGDBGetResource[IGDBModel.IGDBGameResponse](IGDBAPI.IGDBEndpointGame, fmt.Sprintf("fields id,cover.*,first_release_date,franchises.*,genres.*,involved_companies.*,name,platforms.*,storyline,summary; where id=%s;", idArg))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -110,17 +111,14 @@ func HandlePostGame(context *gin.Context) {
 	}
 
 	if game.ID == 0 {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": errorMessage,
-		})
+		context.Status(http.StatusNoContent)
 
 		return
 	}
 
 	storedGameId, err := helper.ProcessGameStorage(game)
 
-	if err != nil || storedGameId == 0 {
+	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": errorMessage,
@@ -130,8 +128,10 @@ func HandlePostGame(context *gin.Context) {
 	}
 
 	context.IndentedJSON(http.StatusCreated, gin.H{
-		"status":  http.StatusCreated,
-		"message": fmt.Sprintf("Game stored with numeric identifier '%d'.", storedGameId),
+		"status": http.StatusCreated,
+		"data": map[string]any{
+			"id": storedGameId,
+		},
 	})
 }
 
