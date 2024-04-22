@@ -29,6 +29,19 @@ type OLWorkResponse struct {
 	Subjects    []string    `json:"subjects"`
 }
 
+type OLBookSearchResponse struct {
+	Results      []OLBookSearchResult `json:"docs"`
+	TotalResults int                  `json:"numFound"`
+}
+
+type OLBookSearchResult struct {
+	ID          []string `json:"edition_key"`
+	ISBN        []string `json:"isbn"`
+	Title       string   `json:"title"`
+	PublishDate []string `json:"publish_date"`
+	Image       string   `json:"cover_edition_key"`
+}
+
 type OLResourceReference struct {
 	ID string `json:"key"`
 }
