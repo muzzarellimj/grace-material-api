@@ -15,9 +15,6 @@ func MapSearchResultSlice(input []OLModel.OLBookSearchResult) []model.BookSearch
 	var resultSlice []model.BookSearchResult
 
 	for _, result := range input {
-		var isbn10 string
-		var isbn13 string
-
 		if len(result.ID) == 0 {
 			fmt.Fprint(os.Stdout, "Unable to map OL search result; result did not contain an edition identifier.\n", result)
 
@@ -32,34 +29,34 @@ func MapSearchResultSlice(input []OLModel.OLBookSearchResult) []model.BookSearch
 			continue
 		}
 
-		for _, isbn := range result.ISBN {
-			isbn = FormatISBN(isbn)
+		if len(result.Authors) == 0 {
+			fmt.Fprintf(os.Stdout, "Unable to map OL search result; result did not contain an author name set: '%s'\n", id)
 
-			if len(isbn) == 10 {
-				isbn10 = isbn
+			continue
+		}
 
-				continue
-			}
+		var publishDate int64
 
-			if len(isbn) == 13 {
-				isbn13 = isbn
+		for _, date := range result.PublishDate {
+			datetime := util.ParseDateTime(date)
 
-				continue
+			if datetime != 0 {
+				publishDate = datetime
 			}
 		}
 
-		if isbn10 == "" || isbn13 == "" {
-			fmt.Fprintf(os.Stdout, "Unable to map OL search result; result did not contain either an ISBN-10 or ISBN-13: '%s'\n", id)
+		if publishDate == 0 {
+			fmt.Fprintf(os.Stdout, "Unable to map OL search result; result did not contain a parseable publication date: '%s'\n", id)
 
 			continue
 		}
 
 		mappedResult := model.BookSearchResult{
-			ID:          result.ID[0],
+			ID:          id,
 			Title:       result.Title,
-			PublishDate: util.ParseDateTime(result.PublishDate[0]),
-			ISBN10:      isbn10,
-			ISBN13:      isbn13,
+			Authors:     result.Authors,
+			PublishDate: publishDate,
+			Image:       FormatImagePath(id),
 		}
 
 		resultSlice = append(resultSlice, mappedResult)
@@ -73,6 +70,10 @@ func MapSearchResultSlice(input []OLModel.OLBookSearchResult) []model.BookSearch
 // Return: formatted ISBN when an input string is provided, an empty string when one is not.
 func FormatISBN(isbn string) string {
 	return strings.ReplaceAll(isbn, "-", "")
+}
+
+func FormatImagePath(id string) string {
+	return fmt.Sprintf("https://covers.openlibrary.org/b/olid/%s-L.jpg", id)
 }
 
 // Extract an edition description, which can either be in string or map[string]string form.

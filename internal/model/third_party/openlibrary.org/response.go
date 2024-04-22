@@ -36,10 +36,9 @@ type OLBookSearchResponse struct {
 
 type OLBookSearchResult struct {
 	ID          []string `json:"edition_key"`
-	ISBN        []string `json:"isbn"`
 	Title       string   `json:"title"`
+	Authors     []string `json:"author_name"`
 	PublishDate []string `json:"publish_date"`
-	Image       string   `json:"cover_edition_key"`
 }
 
 type OLResourceReference struct {
