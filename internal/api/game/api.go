@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/internal/api/game/helper"
@@ -11,41 +12,58 @@ import (
 	IGDBModel "github.com/muzzarellimj/grace-material-api/internal/model/third_party/igdb.com"
 )
 
-const errorResponseMessage string = "Unable to fetch game metadata and map to supported data structure."
+const errorMessage string = "Unable to fetch game metadata and map to supported data structure."
 
 func HandleGetGame(context *gin.Context) {
-	id, err := strconv.Atoi(context.Query("id"))
+	idArg := context.Query("id")
 
-	if err != nil {
+	if len(idArg) == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
 	}
 
-	game, err := helper.FetchGame(fmt.Sprintf("id=%d", id))
+	idSlice := strings.Split(idArg, ",")
 
-	if err != nil {
+	if len(idSlice) == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
+		})
+
+		return
+	}
+
+	var constraintSlice []string
+
+	for _, id := range idSlice {
+		constraintSlice = append(constraintSlice, fmt.Sprintf("id=%s", id))
+	}
+
+	gameSlice, errSlice := helper.FetchGameSlice(constraintSlice)
+
+	if len(errSlice) != 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
 	}
 
-	if game.ID != 0 {
-		context.IndentedJSON(http.StatusOK, gin.H{
-			"status": http.StatusOK,
-			"data":   game,
-		})
+	if len(gameSlice) == 0 {
+		context.Status(http.StatusNoContent)
 
 		return
 	}
 
-	context.Status(http.StatusNoContent)
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data":   gameSlice,
+	})
 }
 
 func HandlePostGame(context *gin.Context) {
@@ -65,7 +83,7 @@ func HandlePostGame(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
@@ -85,7 +103,7 @@ func HandlePostGame(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
@@ -94,7 +112,7 @@ func HandlePostGame(context *gin.Context) {
 	if game.ID == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
@@ -105,7 +123,7 @@ func HandlePostGame(context *gin.Context) {
 	if err != nil || storedGameId == 0 {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
@@ -134,7 +152,7 @@ func HandleGetGameSearch(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorResponseMessage,
+			"message": errorMessage,
 		})
 
 		return
