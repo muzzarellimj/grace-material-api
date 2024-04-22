@@ -85,7 +85,7 @@ func HandlePutGame(context *gin.Context) {
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": "Unable to update movie fragment.",
+			"message": "Unable to update game fragment.",
 		})
 
 		return
