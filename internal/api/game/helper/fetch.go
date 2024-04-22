@@ -10,12 +10,14 @@ import (
 )
 
 func FetchGame(constraint string) (model.Game, error) {
+	zero := model.Game{}
+
 	gameFragment, err := service.FetchFragment[model.GameFragment](database.Connection, database.TableGameFragments, constraint)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to fetch game with constraint '%s': %v\n", constraint, err)
 
-		return model.Game{}, err
+		return zero, err
 	}
 
 	franchiseFragmentSlice, err := fetchFranchiseFragmentSlice(gameFragment)
@@ -42,7 +44,30 @@ func FetchGame(constraint string) (model.Game, error) {
 		fmt.Fprintf(os.Stderr, "Unable to fetch studios related to game '%d': %v\n", gameFragment.ID, err)
 	}
 
-	return mapGame(gameFragment, franchiseFragmentSlice, genreFragmentSlice, platformFragmentSlice, studioFragmentSlice), nil
+	game := mapGame(gameFragment, franchiseFragmentSlice, genreFragmentSlice, platformFragmentSlice, studioFragmentSlice)
+
+	return game, nil
+}
+
+func FetchGameSlice(constraintSlice []string) ([]model.Game, []error) {
+	var gameSlice []model.Game
+	var errSlice []error
+
+	for _, constraint := range constraintSlice {
+		game, err := FetchGame(constraint)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to fetch and map game with constraint '%s': %v\n", constraint, err)
+
+			errSlice = append(errSlice, err)
+		}
+
+		if game.ID != 0 {
+			gameSlice = append(gameSlice, game)
+		}
+	}
+
+	return gameSlice, errSlice
 }
 
 func fetchFranchiseFragmentSlice(gameFragment model.GameFragment) ([]model.GameFranchiseFragment, error) {
