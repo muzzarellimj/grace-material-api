@@ -105,3 +105,59 @@ func StoreFragment(connection database.PgxPool, table string, properties []strin
 
 	return id, nil
 }
+
+func UpdateFragment(connection database.PgxPool, table string, properties []string, constraint string, arguments pgx.NamedArgs) (int, error) {
+	var names []string
+
+	for _, property := range properties {
+		names = append(names, fmt.Sprint("@", property))
+	}
+
+	var builder strings.Builder
+
+	for index := range properties {
+		builder.WriteString(fmt.Sprintf("%s=%s", properties[index], names[index]))
+
+		if index != len(properties)-1 {
+			builder.WriteString(",")
+		}
+	}
+
+	statement := fmt.Sprintf("UPDATE %s SET %s WHERE %s RETURNING id", table, builder.String(), constraint)
+
+	tx, err := connection.Begin(context.Background())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to begin transaction to update fragment: %v\n", err)
+
+		return 0, err
+	}
+
+	defer func() {
+		err = tx.Rollback(context.Background())
+
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			fmt.Fprintf(os.Stderr, "Unable to rollback fragment update transaction: %v\n", err)
+		}
+	}()
+
+	var id int
+
+	err = tx.QueryRow(context.Background(), statement, arguments).Scan(&id)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute fragment update statement: %v\n", err)
+
+		return 0, err
+	}
+
+	err = tx.Commit(context.Background())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to commit fragment update transaction: %v\n", err)
+
+		return 0, err
+	}
+
+	return id, nil
+}
