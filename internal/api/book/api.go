@@ -7,9 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/muzzarellimj/grace-material-api/internal/api/book/helper"
-	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
+	OLAPI "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/book"
-	"github.com/muzzarellimj/grace-material-api/internal/util"
 )
 
 const errorMessage string = "Unable to fetch book metadata and map to supported data structure."
@@ -141,7 +140,7 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	edition, err := api.OLGetEdition(idArg)
+	edition, err := OLAPI.OLGetEdition(idArg)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -161,7 +160,7 @@ func HandlePostBook(context *gin.Context) {
 		return
 	}
 
-	work, err := api.OLGetWork(helper.ExtractResourceId(edition.Works[0].ID))
+	work, err := OLAPI.OLGetWork(helper.ExtractResourceId(edition.Works[0].ID))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -192,46 +191,44 @@ func HandlePostBook(context *gin.Context) {
 }
 
 func HandleGetBookSearch(context *gin.Context) {
-	query := helper.FormatISBN(context.Query("query"))
+	query := context.Query("query")
 
 	if query == "" {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid value '%s' provided in query parameter 'query'.", context.Query("query")),
+			"message": fmt.Sprintf("Invalid search term '%s' provided in query parameter 'query'.", query),
 		})
 
 		return
 	}
 
-	edition, err := api.OLGetEdition(query)
+	results, err := OLAPI.OLSearchBook(query)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
-			"message": errorMessage,
+			"message": "Unable to fetch book metadata and map to supported data structure.",
 		})
 
 		return
 	}
 
-	if edition.ID == "" {
+	if len(results.Results) == 0 {
 		context.Status(http.StatusNoContent)
 
 		return
 	}
 
-	results := []model.BookSearchResult{
-		{
-			ID:          helper.ExtractResourceId(edition.ID),
-			Title:       edition.Title,
-			PublishDate: util.ParseDateTime(edition.PublishDate),
-			ISBN10:      helper.ExtractISBN(edition.ISBN10),
-			ISBN13:      helper.ExtractISBN(edition.ISBN13),
-		},
+	mappedResults := helper.MapSearchResultSlice(results.Results)
+
+	if len(mappedResults) == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
 	}
 
 	context.IndentedJSON(http.StatusOK, gin.H{
 		"status": http.StatusOK,
-		"data":   results,
+		"data":   mappedResults,
 	})
 }

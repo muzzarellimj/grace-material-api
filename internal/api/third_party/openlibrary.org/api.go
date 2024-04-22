@@ -15,6 +15,7 @@ const (
 	OLBase            = "https://openlibrary.org"
 	OLEndpointAuthor  = "/authors"
 	OLEndpointEdition = "/isbn"
+	OLEndpointSearch  = "/search"
 	OLEndpointWork    = "/works"
 )
 
@@ -188,4 +189,58 @@ func OLGetWork(id string) (model.OLWorkResponse, error) {
 	}
 
 	return work, nil
+}
+
+func OLSearchBook(query string) (model.OLBookSearchResponse, error) {
+	var zero model.OLBookSearchResponse
+
+	if query == "" {
+		err := errors.New("unable to process request with missing 'query' arg")
+
+		fmt.Fprintf(os.Stderr, "Unable to process book search request due to missing query argument.\n")
+
+		return zero, err
+	}
+
+	path, err := util.CreateRequestPath(OLBase, fmt.Sprint(OLEndpointSearch, ".json"), "", map[string]string{"q": fmt.Sprint(query, " language:eng")})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create request path to '%s%s': %v\n", OLBase, OLEndpointSearch, err)
+
+		return zero, err
+	}
+
+	request, err := util.CreateRequest(http.MethodGet, path, []byte{}, map[string]string{})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create '%s' request to '%s': %v\n", http.MethodGet, path, err)
+
+		return zero, err
+	}
+
+	response, err := util.ExecuteRequest(request)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to execute '%s' request to '%s': %v\n", request.Method, request.URL.String(), err)
+
+		return zero, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Fprintf(os.Stdout, "Unable to find results matching query '%s'.\n", query)
+
+		return zero, nil
+	}
+
+	var model model.OLBookSearchResponse
+
+	err = json.NewDecoder(response.Body).Decode(&model)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to decode response as search response model: %v\n", err)
+
+		return zero, err
+	}
+
+	return model, nil
 }
