@@ -34,6 +34,7 @@ func main() {
 	router.Use(cors.Default())
 
 	router.GET("/api/book", bookApi.HandleGetBook)
+	router.PUT("/api/book", bookApi.HandlePutBook)
 	router.POST("/api/book", bookApi.HandlePostBook)
 	router.GET("/api/book/search", bookApi.HandleGetBookSearch)
 

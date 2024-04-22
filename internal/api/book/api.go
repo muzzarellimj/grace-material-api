@@ -66,6 +66,45 @@ func HandleGetBook(context *gin.Context) {
 	})
 }
 
+func HandlePutBook(context *gin.Context) {
+	var book model.BookFragment
+
+	err := context.BindJSON(&book)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Unable to bind request JSON body to book model.",
+		})
+
+		return
+	}
+
+	id, err := helper.UpdateBookFragment(book)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Unable to update book fragment.",
+		})
+
+		return
+	}
+
+	if id == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data": map[string]any{
+			"id": id,
+		},
+	})
+}
+
 func HandlePostBook(context *gin.Context) {
 	idArg := context.Query("id")
 
