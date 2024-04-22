@@ -11,7 +11,7 @@ import (
 func ParseDateTime(value string) int64 {
 	var timestamp int64
 
-	layoutSlice := []string{"January 2, 2006", "2006-01-02", "2006/01/02", "01-02-2006", "01/02/2006"}
+	layoutSlice := []string{"January 2, 2006", "Jan 2, 2006", "2006-01-02", "2006/01/02", "01-02-2006", "01/02/2006"}
 
 	for _, layout := range layoutSlice {
 		time, err := time.Parse(layout, value)
