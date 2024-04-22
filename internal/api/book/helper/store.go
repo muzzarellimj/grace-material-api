@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	api "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
+	OLAPI "github.com/muzzarellimj/grace-material-api/internal/api/third_party/openlibrary.org"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/book"
@@ -91,7 +91,7 @@ func processAuthorFragmentSliceStorage(authors []OLModel.OLResourceReference) []
 			continue
 		}
 
-		author, err := api.OLGetAuthor(ExtractResourceId(resource.ID))
+		author, err := OLAPI.OLGetAuthor(ExtractResourceId(resource.ID))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to fetch author '%s' OL record: %v\n", ExtractResourceId(resource.ID), err)

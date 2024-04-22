@@ -67,18 +67,20 @@ func HandleGetBook(context *gin.Context) {
 }
 
 func HandlePostBook(context *gin.Context) {
-	id := helper.FormatISBN(context.Query("id"))
+	idArg := context.Query("id")
 
-	if id == "" {
+	if len(idArg) == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
-			"message": fmt.Sprintf("Invalid material identifier '%s' provided in query parameter 'id'.", context.Query("id")),
+			"message": fmt.Sprintf("Invalid material identifier argument '%s' provided in query parameter 'id'.", context.Query("id")),
 		})
 
 		return
 	}
 
-	existingBook, err := helper.FetchBook(fmt.Sprintf("isbn13='%s' OR edition_reference='%s'", id, id))
+	idArg = helper.FormatISBN(context.Query("id"))
+
+	existingBook, err := helper.FetchBook(fmt.Sprintf("isbn13='%s' OR edition_reference='%s'", idArg, idArg))
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -92,13 +94,15 @@ func HandlePostBook(context *gin.Context) {
 	if existingBook.ID != 0 {
 		context.IndentedJSON(http.StatusOK, gin.H{
 			"status": http.StatusOK,
-			"data":   existingBook,
+			"data": map[string]any{
+				"id": existingBook.ID,
+			},
 		})
 
 		return
 	}
 
-	edition, err := api.OLGetEdition(id)
+	edition, err := api.OLGetEdition(idArg)
 
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -141,8 +145,10 @@ func HandlePostBook(context *gin.Context) {
 	}
 
 	context.IndentedJSON(http.StatusCreated, gin.H{
-		"status":  http.StatusCreated,
-		"message": fmt.Sprintf("Book stored with numeric identifier '%d'.", storedBookId),
+		"status": http.StatusCreated,
+		"data": map[string]any{
+			"id": storedBookId,
+		},
 	})
 }
 
