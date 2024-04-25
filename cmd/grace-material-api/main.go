@@ -36,16 +36,19 @@ func main() {
 	router.GET("/api/book", bookApi.HandleGetBook)
 	router.PUT("/api/book", bookApi.HandlePutBook)
 	router.POST("/api/book", bookApi.HandlePostBook)
+	router.GET("/api/book/exist", bookApi.HandleGetBookExistenceSlice)
 	router.GET("/api/book/search", bookApi.HandleGetBookSearch)
 
 	router.GET("/api/game", gameApi.HandleGetGame)
 	router.PUT("/api/game", gameApi.HandlePutGame)
 	router.POST("/api/game", gameApi.HandlePostGame)
+	router.GET("/api/game/exist", gameApi.HandleGetGameExistenceSlice)
 	router.GET("/api/game/search", gameApi.HandleGetGameSearch)
 
 	router.GET("/api/movie", movieApi.HandleGetMovie)
 	router.PUT("/api/movie", movieApi.HandlePutMovie)
 	router.POST("/api/movie", movieApi.HandlePostMovie)
+	router.GET("/api/movie/exist", movieApi.HandleGetMovieExistenceSlice)
 	router.GET("/api/movie/search", movieApi.HandleGetMovieSearch)
 
 	err = router.Run()

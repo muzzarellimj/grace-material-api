@@ -70,6 +70,24 @@ func FetchGameSlice(constraintSlice []string) ([]model.Game, []error) {
 	return gameSlice, errSlice
 }
 
+func FetchGameExistenceSlice() ([]int, []error) {
+	idSlice, err := service.FetchExistenceSlice(database.Connection, database.TableGameFragments)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to fetch existence slice: %v\n", err)
+
+		return []int{}, []error{err}
+	}
+
+	if len(idSlice) == 0 {
+		fmt.Fprint(os.Stderr, "Existence slice appears to be empty.")
+
+		return []int{}, nil
+	}
+
+	return idSlice, nil
+}
+
 func fetchFranchiseFragmentSlice(gameFragment model.GameFragment) ([]model.GameFranchiseFragment, error) {
 	gameFranchiseRelationshipSlice, err := service.FetchRelationshipSlice[model.GameFranchiseRelationship](database.Connection, database.TableGameFranchiseRelationships, fmt.Sprintf("game=%d", gameFragment.ID))
 

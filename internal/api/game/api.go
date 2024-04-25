@@ -175,6 +175,30 @@ func HandlePostGame(context *gin.Context) {
 	})
 }
 
+func HandleGetGameExistenceSlice(context *gin.Context) {
+	gameExistenceSlice, errSlice := helper.FetchGameExistenceSlice()
+
+	if len(errSlice) != 0 {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorMessage,
+		})
+
+		return
+	}
+
+	if len(gameExistenceSlice) == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data":   gameExistenceSlice,
+	})
+}
+
 func HandleGetGameSearch(context *gin.Context) {
 	query := context.Query("query")
 

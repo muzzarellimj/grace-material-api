@@ -64,6 +64,24 @@ func FetchBookSlice(constraintSlice []string) ([]model.Book, []error) {
 	return bookSlice, errSlice
 }
 
+func FetchBookExistenceSlice() ([]int, []error) {
+	idSlice, err := service.FetchExistenceSlice(database.Connection, database.TableBookFragments)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to fetch existence slice: %v\n", err)
+
+		return []int{}, []error{err}
+	}
+
+	if len(idSlice) == 0 {
+		fmt.Fprint(os.Stderr, "Existence slice appears to be empty.")
+
+		return []int{}, nil
+	}
+
+	return idSlice, nil
+}
+
 func fetchAuthorFragmentSlice(bookFragment model.BookFragment) ([]model.BookAuthorFragment, error) {
 	bookAuthorRelationshipSlice, err := service.FetchRelationshipSlice[model.BookAuthorRelationship](database.Connection, database.TableBookAuthorRelationships, fmt.Sprintf("book=%d", bookFragment.ID))
 

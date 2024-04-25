@@ -174,6 +174,30 @@ func HandlePostMovie(context *gin.Context) {
 	})
 }
 
+func HandleGetMovieExistenceSlice(context *gin.Context) {
+	movieExistenceSlice, errSlice := helper.FetchMovieExistenceSlice()
+
+	if len(errSlice) != 0 {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": errorMessage,
+		})
+
+		return
+	}
+
+	if len(movieExistenceSlice) == 0 {
+		context.Status(http.StatusNoContent)
+
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"status": http.StatusOK,
+		"data":   movieExistenceSlice,
+	})
+}
+
 func HandleGetMovieSearch(context *gin.Context) {
 	query := context.Query("query")
 

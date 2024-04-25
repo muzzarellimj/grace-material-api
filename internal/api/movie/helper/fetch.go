@@ -58,6 +58,24 @@ func FetchMovieSlice(constraintSlice []string) ([]model.Movie, []error) {
 	return movieSlice, errorSlice
 }
 
+func FetchMovieExistenceSlice() ([]int, []error) {
+	idSlice, err := service.FetchExistenceSlice(database.Connection, database.TableMovieFragments)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to fetch existence slice: %v\n", err)
+
+		return []int{}, []error{err}
+	}
+
+	if len(idSlice) == 0 {
+		fmt.Fprint(os.Stderr, "Existence slice appears to be empty.")
+
+		return []int{}, nil
+	}
+
+	return idSlice, nil
+}
+
 func fetchGenreFragmentSlice(movieFragment model.MovieFragment) ([]model.MovieGenreFragment, error) {
 	zero := []model.MovieGenreFragment{}
 
