@@ -175,6 +175,22 @@ func fetchStudioFragmentSlice(gameFragment model.GameFragment) ([]model.GameStud
 }
 
 func mapGame(gameFragment model.GameFragment, franchiseFragmentSlice []model.GameFranchiseFragment, genreFragmentSlice []model.GameGenreFragment, platformFragmentSlice []model.GamePlatformFragment, studioFragmentSlice []model.GameStudioFragment) model.Game {
+	if franchiseFragmentSlice == nil {
+		franchiseFragmentSlice = make([]model.GameFranchiseFragment, 0)
+	}
+
+	if genreFragmentSlice == nil {
+		genreFragmentSlice = make([]model.GameGenreFragment, 0)
+	}
+
+	if platformFragmentSlice == nil {
+		platformFragmentSlice = make([]model.GamePlatformFragment, 0)
+	}
+
+	if studioFragmentSlice == nil {
+		studioFragmentSlice = make([]model.GameStudioFragment, 0)
+	}
+
 	return model.Game{
 		ID:          gameFragment.ID,
 		Title:       gameFragment.Title,

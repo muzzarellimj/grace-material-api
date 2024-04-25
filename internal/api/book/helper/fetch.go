@@ -143,6 +143,18 @@ func fetchTopicFragmentSlice(bookFragment model.BookFragment) ([]model.BookTopic
 }
 
 func mapBook(bookFragment model.BookFragment, authorFragmentSlice []model.BookAuthorFragment, publisherFragmentSlice []model.BookPublisherFragment, topicFragmentSlice []model.BookTopicFragment) model.Book {
+	if authorFragmentSlice == nil {
+		authorFragmentSlice = make([]model.BookAuthorFragment, 0)
+	}
+
+	if publisherFragmentSlice == nil {
+		publisherFragmentSlice = make([]model.BookPublisherFragment, 0)
+	}
+
+	if topicFragmentSlice == nil {
+		topicFragmentSlice = make([]model.BookTopicFragment, 0)
+	}
+
 	return model.Book{
 		ID:               bookFragment.ID,
 		Title:            bookFragment.Title,

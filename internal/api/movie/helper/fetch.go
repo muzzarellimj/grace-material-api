@@ -115,6 +115,14 @@ func fetchProductionCompanyFragmentSlice(movieFragment model.MovieFragment) ([]m
 }
 
 func mapMovie(movieFragment model.MovieFragment, genreFragmentSlice []model.MovieGenreFragment, productionCompanyFragmentSlice []model.MovieProductionCompanyFragment) model.Movie {
+	if genreFragmentSlice == nil {
+		genreFragmentSlice = make([]model.MovieGenreFragment, 0)
+	}
+
+	if productionCompanyFragmentSlice == nil {
+		productionCompanyFragmentSlice = make([]model.MovieProductionCompanyFragment, 0)
+	}
+
 	return model.Movie{
 		ID:                  movieFragment.ID,
 		Title:               movieFragment.Title,
