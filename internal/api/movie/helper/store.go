@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/muzzarellimj/grace-material-api/internal/api/game/helper"
 	"github.com/muzzarellimj/grace-material-api/internal/database"
 	"github.com/muzzarellimj/grace-material-api/internal/database/service"
 	model "github.com/muzzarellimj/grace-material-api/internal/model/movie"
@@ -49,7 +48,7 @@ func storeMovieFragment(movie TMDBModel.TMDBMovieDetailResponse) (int, error) {
 		"description":  movie.Overview,
 		"release_date": util.ParseDateTime(movie.ReleaseDate),
 		"runtime":      movie.Runtime,
-		"image":        helper.FormatImagePath(movie.Image),
+		"image":        FormatImagePath(movie.Image),
 		"reference":    movie.ID,
 	})
 
